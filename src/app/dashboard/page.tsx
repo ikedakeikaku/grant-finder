@@ -21,9 +21,25 @@ interface MatchRow {
   } | null;
 }
 
+interface PredictedRow {
+  id: string;
+  reasons: string[] | null;
+  subsidy_predictions: {
+    name: string;
+    predicted_start_from: string | null;
+    basis: string | null;
+  } | null;
+}
+
 function formatMan(yen: number | null): string {
   if (yen == null) return "—";
   return `${Math.round(yen / 10000).toLocaleString("ja-JP")}万円`;
+}
+
+function predictedMonth(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : `${d.getUTCMonth() + 1}月頃`;
 }
 
 export default async function DashboardPage() {
@@ -46,9 +62,23 @@ export default async function DashboardPage() {
       "id, score, reasons, subsidies(id, title, catch_phrase, subsidy_max_limit, subsidy_rate, acceptance_end_datetime, status, front_subsidy_detail_page_url)",
     )
     .eq("business_id", business.id)
+    .eq("kind", "open")
     .eq("dismissed", false)
     .order("score", { ascending: false });
   const matches = (data ?? []) as unknown as MatchRow[];
+
+  // 公募前予測（例年そろそろ公募が始まる制度）
+  const { data: predData } = await supabase
+    .from("matches")
+    .select(
+      "id, reasons, subsidy_predictions(name, predicted_start_from, basis)",
+    )
+    .eq("business_id", business.id)
+    .eq("kind", "predicted")
+    .eq("dismissed", false)
+    .order("score", { ascending: false });
+  const predicted = (predData ?? []) as unknown as PredictedRow[];
+
   const now = new Date();
 
   return (
@@ -161,6 +191,51 @@ export default async function DashboardPage() {
             );
           })}
         </ul>
+      )}
+
+      {predicted.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-lg font-bold">
+            📅 例年そろそろ公募が予想される補助金
+          </h2>
+          <p className="mt-1 text-sm text-gray-600">
+            過去の公募実績から、まもなく募集が始まると予測される制度です。公募開始が近づいたらお知らせします。
+          </p>
+          <ul className="mt-4 space-y-3">
+            {predicted.map((p) => {
+              const pred = p.subsidy_predictions;
+              if (!pred) return null;
+              return (
+                <li
+                  key={p.id}
+                  className="rounded-lg border border-dashed border-amber-300 bg-amber-50/40 p-5"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 className="font-semibold leading-snug">{pred.name}</h3>
+                    <span className="shrink-0 rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-800">
+                      例年{predictedMonth(pred.predicted_start_from)}
+                    </span>
+                  </div>
+                  {pred.basis && (
+                    <p className="mt-1 text-sm text-gray-600">{pred.basis}</p>
+                  )}
+                  {p.reasons && p.reasons.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {p.reasons.map((r, i) => (
+                        <span
+                          key={i}
+                          className="rounded bg-amber-100/70 px-2 py-0.5 text-xs text-amber-900"
+                        >
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
       <p className="mt-10 text-xs text-gray-400">
