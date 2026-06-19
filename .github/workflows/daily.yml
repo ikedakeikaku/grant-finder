@@ -30,6 +30,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: jGrants 取込
         run: pnpm ingest
+      - name: 主要制度のキュレーション反映
+        run: pnpm seed
       - name: 公募前予測の生成
         run: pnpm predict
       - name: マッチ生成
