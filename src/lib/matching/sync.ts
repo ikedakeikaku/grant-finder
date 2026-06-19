@@ -6,6 +6,11 @@ import {
 } from "../core/matching";
 import { isApplicationOffering } from "../core/offering";
 import { dedupeByScheduleKey } from "../core/dedupe";
+import { PREFECTURES } from "../core/constants";
+import { isCuratedJgrantsTitle } from "../curated";
+
+/** LLMに渡す予測候補の上限（max_tokens対策＋ノイズ削減） */
+const PREDICTION_CANDIDATE_POOL = 40;
 import {
   isRelevanceEnabled,
   rankRelevance,
@@ -46,9 +51,14 @@ export async function fetchOpenSubsidiesForMatch(
     .in("status", ["open", "closing_soon"]);
   if (error) throw new Error(`subsidies 取得失敗: ${error.message}`);
 
-  // 新規応募できる公募のみ → 同一制度は締切が最も近い回次だけに名寄せ。
+  // 新規応募できる公募のみ。キュレーション対象のjGrantsエントリ(不正確)は抑制。
+  // → 同一制度は締切が最も近い回次だけに名寄せ。
   const offerings = (data ?? [])
     .filter((s) => isApplicationOffering(s.title, s.name))
+    .filter(
+      (s) =>
+        String(s.id).startsWith("curated:") || !isCuratedJgrantsTitle(s.title),
+    )
     .map((s) => ({
       id: s.id,
       scheduleKey: s.schedule_key,
@@ -179,18 +189,45 @@ export const PREDICTED_LIMIT = 5;
 export interface ActivePrediction {
   id: string;
   name: string;
+  confidence: number;
 }
 
-/** 有効な公募前予測を取得する。 */
+/** 有効な公募前予測を取得する（信頼度の高い順）。 */
 export async function fetchActivePredictions(
   admin: SupabaseClient,
 ): Promise<ActivePrediction[]> {
   const { data, error } = await admin
     .from("subsidy_predictions")
-    .select("id, name")
-    .eq("active", true);
+    .select("id, name, confidence")
+    .eq("active", true)
+    .order("confidence", { ascending: false });
   if (error) throw new Error(`subsidy_predictions 取得失敗: ${error.message}`);
-  return (data ?? []).map((p) => ({ id: p.id, name: p.name }));
+  return (data ?? []).map((p) => ({
+    id: p.id,
+    name: p.name,
+    confidence: Number(p.confidence ?? 0),
+  }));
+}
+
+/**
+ * 予測候補をLLMに渡す前に決定論で間引く。
+ * - 事業者の所在地以外の都道府県名を含む（=他県限定）ものは除外。
+ * - 信頼度の高い順に上限まで。
+ */
+function prefilterPredictions(
+  predictions: ActivePrediction[],
+  prefecture: string | null,
+): ActivePrediction[] {
+  const otherPrefs = prefecture
+    ? PREFECTURES.filter((p) => p !== prefecture)
+    : [];
+  return predictions
+    .filter((p) => {
+      if (!prefecture) return true;
+      if (p.name.includes(prefecture)) return true;
+      return !otherPrefs.some((op) => p.name.includes(op));
+    })
+    .slice(0, PREDICTION_CANDIDATE_POOL);
 }
 
 /**
@@ -211,7 +248,8 @@ export async function syncPredictedMatchesForBusiness(
     reasons: string[];
   }> = [];
 
-  if (isRelevanceEnabled() && predictions.length > 0) {
+  const pool = prefilterPredictions(predictions, business.prefecture);
+  if (isRelevanceEnabled() && pool.length > 0) {
     try {
       const profile: BusinessProfile = {
         industry: business.industry,
@@ -220,7 +258,7 @@ export async function syncPredictedMatchesForBusiness(
         purposes: business.purposes ?? [],
         interests: business.interests ?? [],
       };
-      const cands: RelevanceCandidate[] = predictions.map((p) => ({
+      const cands: RelevanceCandidate[] = pool.map((p) => ({
         id: p.id,
         title: p.name,
         catchPhrase: null,

@@ -25,12 +25,19 @@ async function main(): Promise<void> {
   const now = new Date();
   const admin = createSupabaseAdminClient();
 
-  // 履歴
-  const { data: schedData, error: sErr } = await admin
-    .from("subsidy_schedules")
-    .select("schedule_key, name, acceptance_start");
-  if (sErr) throw new Error(`subsidy_schedules 取得失敗: ${sErr.message}`);
-  const schedules = (schedData ?? []) as ScheduleRow[];
+  // 履歴（PostgRESTの既定上限1000行を超えるためページネーションで全件取得）
+  const schedules: ScheduleRow[] = [];
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await admin
+      .from("subsidy_schedules")
+      .select("schedule_key, name, acceptance_start")
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`subsidy_schedules 取得失敗: ${error.message}`);
+    const page = (data ?? []) as ScheduleRow[];
+    schedules.push(...page);
+    if (page.length < PAGE) break;
+  }
 
   // 現在公募中の制度キー（予測対象から除外）
   const { data: openData, error: oErr } = await admin

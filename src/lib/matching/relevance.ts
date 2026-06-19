@@ -113,7 +113,7 @@ export async function rankRelevance(
 
   const res = await client.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 8000,
     system: SYSTEM,
     tools: [TOOL],
     tool_choice: { type: "tool", name: "submit_relevance" },
