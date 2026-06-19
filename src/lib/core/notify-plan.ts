@@ -1,7 +1,20 @@
+import { differenceInCalendarDays } from "date-fns";
 import {
   dueDeadlineNotifications,
   type DeadlineNotificationType,
 } from "./deadline";
+
+/** 公募前予告(pre_announce)を出すリードタイム（予測公募開始の何日前に1回目を飛ばすか） */
+export const PRE_ANNOUNCE_LEAD_DAYS = 60;
+
+/**
+ * 公募前予告を出すべきタイミングか。
+ * 予測される公募開始まで PRE_ANNOUNCE_LEAD_DAYS 日以内（かつ開始前）なら true。
+ */
+export function preAnnounceDue(predictedStartFrom: Date, now: Date): boolean {
+  const days = differenceInCalendarDays(predictedStartFrom, now);
+  return days >= 0 && days <= PRE_ANNOUNCE_LEAD_DAYS;
+}
 
 /**
  * 1マッチについて「今この時点で新たに作るべき通知種別」を決める純粋関数群。

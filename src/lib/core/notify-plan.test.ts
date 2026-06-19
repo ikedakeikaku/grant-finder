@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planNotifications } from "./notify-plan";
+import { planNotifications, preAnnounceDue } from "./notify-plan";
 
 const now = new Date("2026-06-19T09:00:00+09:00");
 const inDays = (d: number) => new Date(now.getTime() + d * 24 * 60 * 60 * 1000);
@@ -46,5 +46,20 @@ describe("planNotifications", () => {
       now,
     );
     expect(p).toEqual([]);
+  });
+});
+
+describe("preAnnounceDue（予測の公募前予告：60日前）", () => {
+  it("公募開始まで61日はまだ出さない", () => {
+    expect(preAnnounceDue(inDays(61), now)).toBe(false);
+  });
+  it("ちょうど60日前は出す", () => {
+    expect(preAnnounceDue(inDays(60), now)).toBe(true);
+  });
+  it("直前(0日)も出す", () => {
+    expect(preAnnounceDue(inDays(0), now)).toBe(true);
+  });
+  it("公募開始を過ぎたら出さない", () => {
+    expect(preAnnounceDue(inDays(-1), now)).toBe(false);
   });
 });
