@@ -15,12 +15,20 @@
 ## ディレクトリ
 
 - `src/app/` … 画面（公開LP・登録・ダッシュボード・管理）
-- `src/lib/core/` … pure関数（マッチング/スコア/締切/予測）。**副作用を持たせない・unit test必須**
+- `src/lib/core/` … pure関数（マッチング/スコア/締切/予測/名寄せ/公募判定）。**副作用なし・unit test必須**
 - `src/lib/jgrants/` … jGrants APIクライアント＋型＋正規化
+- `src/lib/matching/` … マッチ生成のDB連携(sync) と LLM関連性ランカー(relevance, Haiku 4.5)
+- `src/lib/curated.ts` … 主要制度の公式日程（jGrantsが不正確なため上書き）
 - `src/lib/supabase/` … server/client/admin クライアント
-- `scripts/` … ingest-jgrants / build-predictions / process-notifications（cron実行）
+- `scripts/` … 日次パイプライン: ingest → seed(キュレーション) → predict → matches → notify
 - `supabase/migrations/` … スキーマ＋RLS（SQL）
 - `docs/` … 設計の詳細
+
+## データ品質の注意（詳細はメモリ参照）
+
+- jGrantsの`acceptance_end`は主要な複数回次制度では実際の申請締切と不一致 → `curated.ts`で上書き。
+- 大きいテーブル(subsidy_schedules等)は PostgREST の1000行上限に注意し`.range()`で全件取得。
+- LLM関連性は`temperature:0`で安定化。予測の事前フィルタは関連ヒント優先（信頼度だけで切らない）。
 
 ## Next.js 16 の必須注意（詳細: docs/nextjs16.md）
 
