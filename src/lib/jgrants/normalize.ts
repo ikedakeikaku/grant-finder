@@ -101,6 +101,41 @@ export function deriveScheduleKey(title: string): string {
 }
 
 /**
+ * 添付ファイル配列から base64 本体（data 等）を取り除き、メタ情報だけ残す純粋関数。
+ * jGrants 詳細APIの application_guidelines / outline_of_grant / application_form は
+ * 公募要領PDF等を base64 で含むため、そのまま raw に保存すると1行が数MBになり
+ * DB の文タイムアウト・転送エラーの原因になる。表示・名寄せに不要な本体だけ落とす。
+ */
+function stripAttachmentBinaries(items: unknown[]): unknown[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => {
+    if (!item || typeof item !== "object") return item;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(item as Record<string, unknown>)) {
+      // base64 本体とみられるフィールドは保存しない
+      if (k === "data" || k === "file_data" || k === "base64") continue;
+      out[k] = v;
+    }
+    return out;
+  });
+}
+
+/**
+ * raw 保存用に詳細レスポンスを軽量化する純粋関数。
+ * 将来の項目追加に備えて全体を保持しつつ、巨大な添付本体だけ除去する。
+ */
+function sanitizeRawDetail(detail: JGrantsDetail): Record<string, unknown> {
+  return {
+    ...detail,
+    application_guidelines: stripAttachmentBinaries(
+      detail.application_guidelines,
+    ),
+    outline_of_grant: stripAttachmentBinaries(detail.outline_of_grant),
+    application_form: stripAttachmentBinaries(detail.application_form),
+  };
+}
+
+/**
  * 詳細APIの結果を DB 行（NormalizedSubsidy）に変換する純粋関数。
  * status の算出に「現在時刻」を注入する（テスト容易性のため）。
  */
@@ -132,6 +167,6 @@ export function normalizeSubsidy(
     front_subsidy_detail_page_url: detail.front_subsidy_detail_page_url,
     status: computeSubsidyStatus(start, end, now),
     schedule_key: deriveScheduleKey(detail.title),
-    raw: detail,
+    raw: sanitizeRawDetail(detail),
   };
 }

@@ -58,8 +58,9 @@ async function main(): Promise<void> {
   console.log(`[detail] 正規化完了: ${rows.length}件`);
 
   // 3. subsidies へ upsert（id 競合で更新。first_seen_at は payload に含めず初回値を保持）
+  // raw は添付の base64 を除去済みだが、無料プランの文タイムアウト回避のため小さめに分割。
   let upserted = 0;
-  for (const batch of chunk(rows, 100)) {
+  for (const batch of chunk(rows, 50)) {
     const { error } = await supabase
       .from("subsidies")
       .upsert(batch, { onConflict: "id" });
