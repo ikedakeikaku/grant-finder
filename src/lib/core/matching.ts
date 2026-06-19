@@ -53,6 +53,13 @@ export interface IndustryMatch {
   match: boolean; // プロフィール業種が対象に含まれるか（限定時のみ意味を持つ）
 }
 
+/**
+ * これ以上の業種数を列挙している補助金は「ほぼ全業種対象」とみなし、
+ * 業種での絞り込み（restricted）として扱わない。全業種タグは関連性の信号に
+ * ならず、業種ボーナスで無関係な補助金が上位に来る原因になるため。
+ */
+export const UNIVERSAL_INDUSTRY_THRESHOLD = 15;
+
 /** 補助金の industry は "建設業 / 製造業 / ..." のようなスラッシュ区切り。 */
 export function matchIndustry(
   subsidyIndustry: string | null,
@@ -62,7 +69,10 @@ export function matchIndustry(
     .split("/")
     .map((s) => s.trim())
     .filter(Boolean);
-  if (list.length === 0) return { restricted: false, match: false };
+  // 業種指定なし、または事実上の全業種は「限定なし」とみなす。
+  if (list.length === 0 || list.length >= UNIVERSAL_INDUSTRY_THRESHOLD) {
+    return { restricted: false, match: false };
+  }
   if (!businessIndustry) return { restricted: true, match: false };
   return { restricted: true, match: list.includes(businessIndustry.trim()) };
 }
