@@ -187,3 +187,46 @@ export function scoreMatch(
 
   return { eligible: true, score: clamp01(score), reasons };
 }
+
+// --- 複数補助金からの提案生成 -------------------------------------------
+
+export interface ScoredMatch {
+  subsidyId: string;
+  score: number;
+  reasons: string[];
+}
+
+export interface GenerateMatchesOptions {
+  /** これ未満のスコアは提案しない（既定 0.3） */
+  minScore?: number;
+  /** 上位何件まで提案するか（既定 20） */
+  limit?: number;
+}
+
+/**
+ * プロフィールに対し、複数の補助金から「適格かつスコアが閾値以上」の提案を
+ * スコア降順で返す純粋関数。同点は score の安定性のため id 昇順で並べる。
+ */
+export function generateMatches(
+  profile: BusinessProfile,
+  subsidies: Array<SubsidyForMatch & { id: string }>,
+  options: GenerateMatchesOptions = {},
+): ScoredMatch[] {
+  const minScore = options.minScore ?? 0.3;
+  const limit = options.limit ?? 20;
+
+  return subsidies
+    .map((s) => {
+      const r = scoreMatch(profile, s);
+      return {
+        subsidyId: s.id,
+        score: r.score,
+        reasons: r.reasons,
+        eligible: r.eligible,
+      };
+    })
+    .filter((m) => m.eligible && m.score >= minScore)
+    .sort((a, b) => b.score - a.score || a.subsidyId.localeCompare(b.subsidyId))
+    .slice(0, limit)
+    .map(({ subsidyId, score, reasons }) => ({ subsidyId, score, reasons }));
+}

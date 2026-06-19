@@ -1,0 +1,35 @@
+name: daily-pipeline
+
+# 日次パイプライン: jGrants取込 → マッチ生成 → 通知作成/送信。手動実行も可。
+# Secrets: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY
+# Variables(任意): JGRANTS_API_BASE_URL, JGRANTS_INGEST_KEYWORDS, NOTIFY_FROM_EMAIL, APP_BASE_URL
+on:
+  schedule:
+    - cron: "0 21 * * *" # 毎日 06:00 JST (21:00 UTC)
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      JGRANTS_API_BASE_URL: ${{ vars.JGRANTS_API_BASE_URL }}
+      JGRANTS_INGEST_KEYWORDS: ${{ vars.JGRANTS_INGEST_KEYWORDS }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      NOTIFY_FROM_EMAIL: ${{ vars.NOTIFY_FROM_EMAIL }}
+      APP_BASE_URL: ${{ vars.APP_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: jGrants 取込
+        run: pnpm ingest
+      - name: マッチ生成
+        run: pnpm matches
+      - name: 通知作成・送信
+        run: pnpm notify
