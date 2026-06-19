@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "ingest": "tsx scripts/ingest-jgrants.ts",
-    "predict": "tsx scripts/build-predictions.ts",
+    "matches": "tsx scripts/build-matches.ts",
     "notify": "tsx scripts/process-notifications.ts"
   },
   "dependencies": {
