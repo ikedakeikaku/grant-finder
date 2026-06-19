@@ -112,6 +112,26 @@ describe("normalizeSubsidy", () => {
     expect(n.schedule_key).toBe(
       "中小企業生産性革命推進事業_事業承継・M&A補助金_事業承継促進枠",
     );
-    expect(n.raw).toBe(fixture);
+    // raw はサニタイズ済みコピー（添付なしなら内容は元と等価）
+    expect(n.raw).toEqual(fixture);
+  });
+
+  it("raw から添付の base64 本体を除去し、メタ情報は残す", () => {
+    const withAttachment: JGrantsDetail = {
+      ...fixture,
+      application_guidelines: [
+        { name: "公募要領.pdf", data: "BASE64DATA==" },
+      ],
+      application_form: [{ name: "様式1.docx", file_data: "BASE64DATA==" }],
+    };
+    const n = normalizeSubsidy(withAttachment, now);
+    const raw = n.raw as {
+      application_guidelines: Record<string, unknown>[];
+      application_form: Record<string, unknown>[];
+    };
+    expect(raw.application_guidelines[0]).toEqual({ name: "公募要領.pdf" });
+    expect(raw.application_guidelines[0]).not.toHaveProperty("data");
+    expect(raw.application_form[0]).toEqual({ name: "様式1.docx" });
+    expect(raw.application_form[0]).not.toHaveProperty("file_data");
   });
 });
