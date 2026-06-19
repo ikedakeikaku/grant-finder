@@ -5,6 +5,7 @@ import {
   type SubsidyForMatch,
 } from "../core/matching";
 import { isApplicationOffering } from "../core/offering";
+import { dedupeByScheduleKey } from "../core/dedupe";
 import {
   isRelevanceEnabled,
   rankRelevance,
@@ -40,14 +41,18 @@ export async function fetchOpenSubsidiesForMatch(
   const { data, error } = await admin
     .from("subsidies")
     .select(
-      "id, name, use_purpose, industry, target_area_search, target_number_of_employees, title, catch_phrase",
+      "id, name, schedule_key, acceptance_end_datetime, use_purpose, industry, target_area_search, target_number_of_employees, title, catch_phrase",
     )
     .in("status", ["open", "closing_soon"]);
   if (error) throw new Error(`subsidies 取得失敗: ${error.message}`);
-  return (data ?? [])
+
+  // 新規応募できる公募のみ → 同一制度は締切が最も近い回次だけに名寄せ。
+  const offerings = (data ?? [])
     .filter((s) => isApplicationOffering(s.title, s.name))
     .map((s) => ({
       id: s.id,
+      scheduleKey: s.schedule_key,
+      acceptanceEnd: s.acceptance_end_datetime,
       usePurpose: s.use_purpose,
       industry: s.industry,
       targetAreaSearch: s.target_area_search,
@@ -55,6 +60,16 @@ export async function fetchOpenSubsidiesForMatch(
       title: s.title,
       catchPhrase: s.catch_phrase,
     }));
+
+  return dedupeByScheduleKey(offerings).map((s) => ({
+    id: s.id,
+    usePurpose: s.usePurpose,
+    industry: s.industry,
+    targetAreaSearch: s.targetAreaSearch,
+    targetNumberOfEmployees: s.targetNumberOfEmployees,
+    title: s.title,
+    catchPhrase: s.catchPhrase,
+  }));
 }
 
 interface MatchRow {
