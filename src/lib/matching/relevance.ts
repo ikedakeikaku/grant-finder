@@ -115,6 +115,7 @@ export async function rankRelevance(
   const res = await client.messages.create({
     model: MODEL,
     max_tokens: 8000,
+    temperature: 0, // 実行ごとのブレをなくし、同じ入力には同じ評価を返す
     system: SYSTEM,
     tools: [TOOL],
     tool_choice: { type: "tool", name: "submit_relevance" },
