@@ -1,0 +1,27 @@
+name: ingest-jgrants
+
+# jGrants 取込バッチ（日次）。手動実行も可。
+# 必要な Secrets: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+# 任意 Variables: JGRANTS_INGEST_KEYWORDS, JGRANTS_API_BASE_URL
+on:
+  schedule:
+    - cron: "0 21 * * *" # 毎日 06:00 JST (21:00 UTC)
+  workflow_dispatch:
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm ingest
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          JGRANTS_API_BASE_URL: ${{ vars.JGRANTS_API_BASE_URL }}
+          JGRANTS_INGEST_KEYWORDS: ${{ vars.JGRANTS_INGEST_KEYWORDS }}
