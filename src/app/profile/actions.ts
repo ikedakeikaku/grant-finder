@@ -7,7 +7,9 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { parseProfileForm, toBusinessRow } from "@/lib/validation";
 import {
   fetchOpenSubsidiesForMatch,
+  fetchActivePredictions,
   syncMatchesForBusiness,
+  syncPredictedMatchesForBusiness,
 } from "@/lib/matching/sync";
 
 export interface ProfileState {
@@ -63,20 +65,21 @@ export async function saveProfile(
   // 登録直後に提案を表示できるよう、即マッチを生成（失敗しても保存は妨げない）。
   try {
     const admin = createSupabaseAdminClient();
-    const subsidies = await fetchOpenSubsidiesForMatch(admin);
-    await syncMatchesForBusiness(
-      admin,
-      {
-        id: businessId,
-        industry: parsed.data.industry,
-        prefecture: parsed.data.prefecture,
-        employee_count: parsed.data.employeeCount,
-        purposes: parsed.data.purposes,
-        interests: parsed.data.interests,
-        planned_investment: parsed.data.plannedInvestment,
-      },
-      subsidies,
-    );
+    const businessForMatch = {
+      id: businessId,
+      industry: parsed.data.industry,
+      prefecture: parsed.data.prefecture,
+      employee_count: parsed.data.employeeCount,
+      purposes: parsed.data.purposes,
+      interests: parsed.data.interests,
+      planned_investment: parsed.data.plannedInvestment,
+    };
+    const [subsidies, predictions] = await Promise.all([
+      fetchOpenSubsidiesForMatch(admin),
+      fetchActivePredictions(admin),
+    ]);
+    await syncMatchesForBusiness(admin, businessForMatch, subsidies);
+    await syncPredictedMatchesForBusiness(admin, businessForMatch, predictions);
   } catch (e) {
     console.error("[profile] マッチ生成に失敗(cronで再生成されます):", e);
   }

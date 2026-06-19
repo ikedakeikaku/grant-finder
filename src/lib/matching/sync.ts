@@ -172,3 +172,109 @@ export async function syncMatchesForBusiness(
 
   return rows.length;
 }
+
+/** 予測として提案する上限件数 */
+export const PREDICTED_LIMIT = 5;
+
+export interface ActivePrediction {
+  id: string;
+  name: string;
+}
+
+/** 有効な公募前予測を取得する。 */
+export async function fetchActivePredictions(
+  admin: SupabaseClient,
+): Promise<ActivePrediction[]> {
+  const { data, error } = await admin
+    .from("subsidy_predictions")
+    .select("id, name")
+    .eq("active", true);
+  if (error) throw new Error(`subsidy_predictions 取得失敗: ${error.message}`);
+  return (data ?? []).map((p) => ({ id: p.id, name: p.name }));
+}
+
+/**
+ * 1事業者について「公募前予測」の提案(kind=predicted)を再構築する。
+ * 予測は制度名しか構造化情報がないため、LLM関連性判定で事業内容に合うものだけ採用。
+ * LLM未設定時は予測提案を作らない（=既存を消す）。
+ */
+export async function syncPredictedMatchesForBusiness(
+  admin: SupabaseClient,
+  business: BusinessMatchInput,
+  predictions: ActivePrediction[],
+): Promise<number> {
+  let rows: Array<{
+    business_id: string;
+    kind: "predicted";
+    prediction_id: string;
+    score: number;
+    reasons: string[];
+  }> = [];
+
+  if (isRelevanceEnabled() && predictions.length > 0) {
+    try {
+      const profile: BusinessProfile = {
+        industry: business.industry,
+        prefecture: business.prefecture,
+        employeeCount: business.employee_count,
+        purposes: business.purposes ?? [],
+        interests: business.interests ?? [],
+      };
+      const cands: RelevanceCandidate[] = predictions.map((p) => ({
+        id: p.id,
+        title: p.name,
+        catchPhrase: null,
+        usePurpose: null,
+      }));
+      const ranked = await rankRelevance(
+        {
+          ...profile,
+          description: business.description ?? null,
+          plannedInvestment: business.planned_investment ?? null,
+        },
+        cands,
+      );
+      const relById = new Map(ranked.map((r) => [r.id, r]));
+      rows = predictions
+        .map((p) => ({ p, rel: relById.get(p.id) }))
+        .filter((x) => x.rel && x.rel.relevance >= RELEVANCE_THRESHOLD)
+        .sort((a, b) => b.rel!.relevance - a.rel!.relevance)
+        .slice(0, PREDICTED_LIMIT)
+        .map((x) => ({
+          business_id: business.id,
+          kind: "predicted" as const,
+          prediction_id: x.p.id,
+          score: x.rel!.relevance,
+          reasons: [x.rel!.reason],
+        }));
+    } catch (e) {
+      console.error(
+        "[relevance] 予測のLLM評価に失敗:",
+        e instanceof Error ? e.message : e,
+      );
+    }
+  }
+
+  if (rows.length > 0) {
+    const { error } = await admin
+      .from("matches")
+      .upsert(rows, { onConflict: "business_id,prediction_id" });
+    if (error)
+      throw new Error(`predicted matches upsert 失敗: ${error.message}`);
+  }
+
+  const keepIds = rows.map((r) => r.prediction_id);
+  let del = admin
+    .from("matches")
+    .delete()
+    .eq("business_id", business.id)
+    .eq("kind", "predicted");
+  if (keepIds.length > 0) {
+    del = del.not("prediction_id", "in", `(${keepIds.join(",")})`);
+  }
+  const { error: delErr } = await del;
+  if (delErr)
+    throw new Error(`古い predicted matches 削除失敗: ${delErr.message}`);
+
+  return rows.length;
+}
