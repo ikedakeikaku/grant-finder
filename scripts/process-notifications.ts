@@ -2,6 +2,7 @@ import "./load-env";
 import { createSupabaseAdminClient } from "../src/lib/supabase/admin";
 import {
   planNotifications,
+  preAnnounceDue,
   type NotificationType,
 } from "../src/lib/core/notify-plan";
 import { renderNotificationEmail } from "../src/lib/notifications/render";
@@ -33,16 +34,32 @@ interface MatchRow {
   subsidies: { acceptance_end_datetime: string | null } | null;
 }
 
+interface PredictedMatchRow {
+  id: string;
+  business_id: string;
+  businesses: {
+    notifications_enabled: boolean;
+    notify_email: string | null;
+  } | null;
+  subsidy_predictions: { predicted_start_from: string | null } | null;
+}
+
 interface DueRow {
   id: string;
   type: NotificationType;
   businesses: { notify_email: string | null } | null;
   matches: {
+    kind: string;
     reasons: string[] | null;
     subsidies: {
       title: string;
       front_subsidy_detail_page_url: string | null;
       acceptance_end_datetime: string | null;
+    } | null;
+    subsidy_predictions: {
+      name: string;
+      basis: string | null;
+      predicted_start_from: string | null;
     } | null;
   } | null;
 }
@@ -113,6 +130,61 @@ async function enqueue(supabase: SupabaseAdmin, now: Date): Promise<number> {
   return toInsert.length;
 }
 
+/** 予測マッチについて公募前予告(pre_announce)を作成する。 */
+async function enqueuePreAnnounce(
+  supabase: SupabaseAdmin,
+  now: Date,
+): Promise<number> {
+  const { data, error } = await supabase
+    .from("matches")
+    .select(
+      "id, business_id, businesses(notifications_enabled, notify_email), subsidy_predictions(predicted_start_from)",
+    )
+    .eq("kind", "predicted")
+    .eq("dismissed", false);
+  if (error) throw new Error(`predicted matches 取得失敗: ${error.message}`);
+  const matches = (data ?? []) as unknown as PredictedMatchRow[];
+
+  const { data: existing, error: nErr } = await supabase
+    .from("notifications")
+    .select("match_id")
+    .eq("type", "pre_announce");
+  if (nErr) throw new Error(`notifications 取得失敗: ${nErr.message}`);
+  const sentSet = new Set(
+    (existing ?? [])
+      .map((n: { match_id: string | null }) => n.match_id)
+      .filter(Boolean),
+  );
+
+  const toInsert: Array<Record<string, unknown>> = [];
+  for (const m of matches) {
+    const biz = m.businesses;
+    if (!biz?.notifications_enabled || !biz.notify_email) continue;
+    if (sentSet.has(m.id)) continue;
+    const start = toDate(m.subsidy_predictions?.predicted_start_from);
+    if (!start || !preAnnounceDue(start, now)) continue;
+    toInsert.push({
+      business_id: m.business_id,
+      match_id: m.id,
+      type: "pre_announce",
+      channel: "email",
+      status: "scheduled",
+      scheduled_for: now.toISOString(),
+    });
+  }
+
+  if (toInsert.length > 0) {
+    const { error: insErr } = await supabase
+      .from("notifications")
+      .upsert(toInsert, {
+        onConflict: "match_id,type,channel",
+        ignoreDuplicates: true,
+      });
+    if (insErr) throw new Error(`pre_announce 作成失敗: ${insErr.message}`);
+  }
+  return toInsert.length;
+}
+
 async function sendDue(
   supabase: SupabaseAdmin,
   sender: EmailSender,
@@ -122,7 +194,7 @@ async function sendDue(
   const { data, error } = await supabase
     .from("notifications")
     .select(
-      "id, type, businesses(notify_email), matches(reasons, subsidies(title, front_subsidy_detail_page_url, acceptance_end_datetime))",
+      "id, type, businesses(notify_email), matches(kind, reasons, subsidies(title, front_subsidy_detail_page_url, acceptance_end_datetime), subsidy_predictions(name, basis, predicted_start_from))",
     )
     .eq("status", "scheduled")
     .eq("channel", "email")
@@ -136,11 +208,32 @@ async function sendDue(
 
   for (const n of due) {
     const to = n.businesses?.notify_email ?? null;
-    const sub = n.matches?.subsidies ?? null;
-    if (!to || !sub) {
+    const mk = n.matches;
+
+    // open は subsidies、predicted は subsidy_predictions から本文を作る。
+    let title: string | null = null;
+    let subsidyUrl: string | null = null;
+    let acceptanceEnd: Date | null = null;
+    let reasons: string[] = mk?.reasons ?? [];
+    if (mk?.kind === "predicted") {
+      const pr = mk.subsidy_predictions;
+      if (pr) {
+        title = pr.name;
+        reasons = [...reasons, pr.basis].filter((x): x is string => !!x);
+      }
+    } else {
+      const sub = mk?.subsidies;
+      if (sub) {
+        title = sub.title;
+        subsidyUrl = sub.front_subsidy_detail_page_url;
+        acceptanceEnd = toDate(sub.acceptance_end_datetime);
+      }
+    }
+
+    if (!to || !title) {
       await supabase
         .from("notifications")
-        .update({ status: "skipped", error: "宛先または補助金情報なし" })
+        .update({ status: "skipped", error: "宛先または対象情報なし" })
         .eq("id", n.id);
       skipped++;
       continue;
@@ -148,10 +241,10 @@ async function sendDue(
 
     const email = renderNotificationEmail({
       type: n.type,
-      subsidyTitle: sub.title,
-      subsidyUrl: sub.front_subsidy_detail_page_url,
-      acceptanceEnd: toDate(sub.acceptance_end_datetime),
-      reasons: n.matches?.reasons ?? [],
+      subsidyTitle: title,
+      subsidyUrl,
+      acceptanceEnd,
+      reasons,
       appBaseUrl,
       now,
     });
@@ -178,7 +271,10 @@ async function main(): Promise<void> {
   const sender = createEmailSender();
 
   const enqueued = await enqueue(supabase, now);
-  console.log(`[notify] 新規作成: ${enqueued}件`);
+  const preAnnounced = await enqueuePreAnnounce(supabase, now);
+  console.log(
+    `[notify] 新規作成: 通常${enqueued}件 / 公募前予告${preAnnounced}件`,
+  );
 
   const r = await sendDue(supabase, sender, now);
   console.log(
