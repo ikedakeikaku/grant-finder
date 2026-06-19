@@ -1,6 +1,10 @@
 import "./load-env";
 import { JGrantsClient } from "../src/lib/jgrants/client";
-import { normalizeSubsidy } from "../src/lib/jgrants/normalize";
+import {
+  normalizeSubsidy,
+  deriveScheduleKey,
+  parseJgrantsDate,
+} from "../src/lib/jgrants/normalize";
 import type { NormalizedSubsidy } from "../src/lib/jgrants/normalize";
 import { createSupabaseAdminClient } from "../src/lib/supabase/admin";
 
@@ -90,6 +94,47 @@ async function main(): Promise<void> {
     schedInserted += batch.length;
   }
   console.log(`[schedules] 履歴蓄積(重複は無視): ${schedInserted}件処理`);
+
+  // 5. 予測の学習元として、終了済みを含む履歴を list のみで蓄積（詳細は取得しない）。
+  const histItems = new Map<
+    string,
+    { title: string; start: string | null; end: string | null }
+  >();
+  for (const keyword of KEYWORDS) {
+    const items = await client.listSubsidies({ keyword, acceptance: 0 });
+    for (const it of items) {
+      const start = parseJgrantsDate(it.acceptance_start_datetime);
+      const end = parseJgrantsDate(it.acceptance_end_datetime);
+      histItems.set(it.id, {
+        title: it.title,
+        start: start ? start.toISOString() : null,
+        end: end ? end.toISOString() : null,
+      });
+    }
+    await sleep(300);
+  }
+  const histRows = [...histItems.values()]
+    .filter((h) => h.start)
+    .map((h) => ({
+      schedule_key: deriveScheduleKey(h.title),
+      name: h.title,
+      acceptance_start: h.start,
+      acceptance_end: h.end,
+      source: "jgrants",
+    }));
+  let histInserted = 0;
+  for (const batch of chunk(histRows, 100)) {
+    const { error } = await supabase.from("subsidy_schedules").upsert(batch, {
+      onConflict: "schedule_key,acceptance_start",
+      ignoreDuplicates: true,
+    });
+    if (error)
+      throw new Error(`subsidy_schedules(履歴) upsert 失敗: ${error.message}`);
+    histInserted += batch.length;
+  }
+  console.log(
+    `[history] 終了済み含む履歴: ${histItems.size}件取得 / ${histInserted}件処理`,
+  );
   console.log("[done] 取込完了");
 }
 
