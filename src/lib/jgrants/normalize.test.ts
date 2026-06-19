@@ -119,9 +119,7 @@ describe("normalizeSubsidy", () => {
   it("raw から添付の base64 本体を除去し、メタ情報は残す", () => {
     const withAttachment: JGrantsDetail = {
       ...fixture,
-      application_guidelines: [
-        { name: "公募要領.pdf", data: "BASE64DATA==" },
-      ],
+      application_guidelines: [{ name: "公募要領.pdf", data: "BASE64DATA==" }],
       application_form: [{ name: "様式1.docx", file_data: "BASE64DATA==" }],
     };
     const n = normalizeSubsidy(withAttachment, now);
