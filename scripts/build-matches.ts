@@ -17,7 +17,9 @@ async function main(): Promise<void> {
 
   const { data: businesses, error } = await admin
     .from("businesses")
-    .select("id, industry, prefecture, employee_count, purposes, interests");
+    .select(
+      "id, industry, prefecture, employee_count, purposes, interests, description, planned_investment",
+    );
   if (error) throw new Error(`businesses 取得失敗: ${error.message}`);
 
   let total = 0;

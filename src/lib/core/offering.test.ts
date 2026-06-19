@@ -17,9 +17,9 @@ describe("isApplicationOffering", () => {
     expect(isApplicationOffering("○○補助金 変更申請")).toBe(false);
   });
   it("通常の新規公募は対象", () => {
-    expect(isApplicationOffering("ものづくり・商業・サービス生産性向上促進補助金")).toBe(
-      true,
-    );
+    expect(
+      isApplicationOffering("ものづくり・商業・サービス生産性向上促進補助金"),
+    ).toBe(true);
     expect(isApplicationOffering("小規模事業者持続化補助金（第17回）")).toBe(
       true,
     );

@@ -73,6 +73,7 @@ export async function saveProfile(
         employee_count: parsed.data.employeeCount,
         purposes: parsed.data.purposes,
         interests: parsed.data.interests,
+        planned_investment: parsed.data.plannedInvestment,
       },
       subsidies,
     );
