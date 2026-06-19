@@ -69,6 +69,7 @@ export async function saveProfile(
       id: businessId,
       industry: parsed.data.industry,
       prefecture: parsed.data.prefecture,
+      city: parsed.data.city,
       employee_count: parsed.data.employeeCount,
       purposes: parsed.data.purposes,
       interests: parsed.data.interests,

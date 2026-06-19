@@ -27,6 +27,12 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+/** "山梨県"→"山梨"、"東京都"→"東京" のように接尾辞を外す（北海道はそのまま）。 */
+function stripPrefectureSuffix(pref: string): string {
+  if (pref === "北海道") return "北海道";
+  return pref.replace(/[都府県]$/, "");
+}
+
 function chunk<T>(arr: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
@@ -44,6 +50,22 @@ async function main(): Promise<void> {
     const items = await client.listSubsidies({ keyword, acceptance: 1 });
     for (const it of items) ids.add(it.id);
     console.log(`[list] keyword=${keyword} -> ${items.length}件`);
+    await sleep(300);
+  }
+
+  // 1b. 登録事業者の所在地名でも検索し、自治体補助金を拾う。
+  const { data: bizPref } = await supabase
+    .from("businesses")
+    .select("prefecture");
+  const areaKeywords = new Set<string>();
+  for (const b of (bizPref ?? []) as { prefecture: string | null }[]) {
+    if (b.prefecture) areaKeywords.add(stripPrefectureSuffix(b.prefecture));
+  }
+  for (const kw of areaKeywords) {
+    if (kw.length < 2) continue;
+    const items = await client.listSubsidies({ keyword: kw, acceptance: 1 });
+    for (const it of items) ids.add(it.id);
+    console.log(`[list] 地域=${kw} -> ${items.length}件`);
     await sleep(300);
   }
   console.log(`[list] 名寄せ後のユニークID: ${ids.size}件`);

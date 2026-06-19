@@ -10,7 +10,7 @@ import { PREFECTURES } from "../core/constants";
 import { isCuratedJgrantsTitle } from "../curated";
 
 /** LLMに渡す予測候補の上限（max_tokens対策＋ノイズ削減） */
-const PREDICTION_CANDIDATE_POOL = 40;
+const PREDICTION_CANDIDATE_POOL = 80;
 import {
   isRelevanceEnabled,
   rankRelevance,
@@ -30,6 +30,7 @@ export interface BusinessMatchInput {
   id: string;
   industry: string | null;
   prefecture: string | null;
+  city: string | null;
   employee_count: number | null;
   purposes: string[] | null;
   interests: string[] | null;
@@ -99,6 +100,7 @@ export async function syncMatchesForBusiness(
   const profile: BusinessProfile = {
     industry: business.industry,
     prefecture: business.prefecture,
+    city: business.city,
     employeeCount: business.employee_count,
     purposes: business.purposes ?? [],
     interests: business.interests ?? [],
@@ -209,25 +211,53 @@ export async function fetchActivePredictions(
   }));
 }
 
+/** 事業内容に由来する素朴なキーワード（予測名との関連ヒント用） */
+function businessKeywords(business: BusinessMatchInput): string[] {
+  const out = new Set<string>();
+  for (const i of business.interests ?? []) if (i.length >= 2) out.add(i);
+  if (business.industry) {
+    const core = business.industry
+      .replace(/（[^）]*）/g, "")
+      .replace(/業$/, "")
+      .trim();
+    if (core.length >= 2) out.add(core);
+  }
+  for (const p of business.purposes ?? []) {
+    const core = p
+      .replace(/(を行いたい|をしたい|したい|を広げたい|を改善したい)$/, "")
+      .trim();
+    if (core.length >= 2) out.add(core);
+  }
+  return [...out];
+}
+
 /**
  * 予測候補をLLMに渡す前に決定論で間引く。
  * - 事業者の所在地以外の都道府県名を含む（=他県限定）ものは除外。
- * - 信頼度の高い順に上限まで。
+ * - 事業内容との関連ヒント（名称へのキーワード一致数）を優先し、次に信頼度。
+ *   信頼度だけで切ると、関連は高いが低信頼度の制度を取りこぼすため。
  */
 function prefilterPredictions(
   predictions: ActivePrediction[],
-  prefecture: string | null,
+  business: BusinessMatchInput,
 ): ActivePrediction[] {
+  const prefecture = business.prefecture;
   const otherPrefs = prefecture
     ? PREFECTURES.filter((p) => p !== prefecture)
     : [];
+  const kws = businessKeywords(business);
+  const hint = (name: string) => kws.filter((k) => name.includes(k)).length;
+
   return predictions
     .filter((p) => {
       if (!prefecture) return true;
       if (p.name.includes(prefecture)) return true;
       return !otherPrefs.some((op) => p.name.includes(op));
     })
-    .slice(0, PREDICTION_CANDIDATE_POOL);
+    .map((p) => ({ p, h: hint(p.name) }))
+    .sort((a, b) => b.h - a.h || b.p.confidence - a.p.confidence)
+    .slice(0, PREDICTION_CANDIDATE_POOL)
+    .map((x) => x.p);
 }
 
 /**
@@ -248,12 +278,13 @@ export async function syncPredictedMatchesForBusiness(
     reasons: string[];
   }> = [];
 
-  const pool = prefilterPredictions(predictions, business.prefecture);
+  const pool = prefilterPredictions(predictions, business);
   if (isRelevanceEnabled() && pool.length > 0) {
     try {
       const profile: BusinessProfile = {
         industry: business.industry,
         prefecture: business.prefecture,
+        city: business.city,
         employeeCount: business.employee_count,
         purposes: business.purposes ?? [],
         interests: business.interests ?? [],

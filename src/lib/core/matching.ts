@@ -12,6 +12,7 @@
 export interface BusinessProfile {
   industry: string | null;
   prefecture: string | null;
+  city: string | null;
   employeeCount: number | null;
   purposes: string[];
   interests: string[];
@@ -35,15 +36,21 @@ export interface MatchResult {
 
 // --- 地域 ---------------------------------------------------------------
 
-/** 対象地域に該当するか。制約なし(全国/空)や所在地不明は true（不適格にしない）。 */
+/**
+ * 対象地域に該当するか。制約なし(全国/空)や所在地不明は true（不適格にしない）。
+ * 都道府県だけでなく市区町村も見て、自治体補助金を拾えるようにする。
+ */
 export function isAreaEligible(
   targetAreaSearch: string | null,
   prefecture: string | null,
+  city: string | null = null,
 ): boolean {
   if (!targetAreaSearch) return true;
   if (targetAreaSearch.includes("全国")) return true;
-  if (!prefecture) return true; // 所在地不明なら判定不能 → 除外しない
-  return targetAreaSearch.includes(prefecture);
+  if (prefecture && targetAreaSearch.includes(prefecture)) return true;
+  if (city && targetAreaSearch.includes(city)) return true;
+  if (!prefecture && !city) return true; // 所在地不明なら判定不能 → 除外しない
+  return false;
 }
 
 // --- 業種 ---------------------------------------------------------------
@@ -130,6 +137,7 @@ const WEIGHTS = {
   purpose: 0.45, // 目的の合致（最重要）
   industry: 0.15, // 業種が明示的に対象
   interest: 0.15, // 関心語の合致
+  local: 0.1, // 地元自治体の補助金
 } as const;
 
 function clamp01(n: number): number {
@@ -146,7 +154,18 @@ export function scoreMatch(
   const reasons: string[] = [];
 
   // ハードゲート
-  const areaOk = isAreaEligible(subsidy.targetAreaSearch, profile.prefecture);
+  const areaOk = isAreaEligible(
+    subsidy.targetAreaSearch,
+    profile.prefecture,
+    profile.city,
+  );
+  // 自治体補助金（全国以外で所在地が対象）は地元として軽く加点する。
+  const isLocal =
+    !!subsidy.targetAreaSearch &&
+    !subsidy.targetAreaSearch.includes("全国") &&
+    ((!!profile.prefecture &&
+      subsidy.targetAreaSearch.includes(profile.prefecture)) ||
+      (!!profile.city && subsidy.targetAreaSearch.includes(profile.city)));
   const industry = matchIndustry(subsidy.industry, profile.industry);
   const sizeOk = isSizeEligible(
     subsidy.targetNumberOfEmployees,
@@ -164,10 +183,12 @@ export function scoreMatch(
 
   // 適格。スコアを積み上げる。
   let score = WEIGHTS.base;
-  if (subsidy.targetAreaSearch?.includes("全国")) {
+  if (isLocal) {
+    // 地元自治体の補助金は競争が緩く採択されやすいので軽く加点。
+    score += WEIGHTS.local;
+    reasons.push(`地元自治体の補助金（${profile.city ?? profile.prefecture}）`);
+  } else if (subsidy.targetAreaSearch?.includes("全国")) {
     reasons.push("全国対象");
-  } else if (profile.prefecture && subsidy.targetAreaSearch) {
-    reasons.push(`対象地域に該当（${profile.prefecture}）`);
   }
 
   // 目的の合致（補助金の use_purpose に含まれるプロフィール目的の割合）

@@ -24,6 +24,12 @@ describe("isAreaEligible", () => {
     expect(isAreaEligible(null, "大阪府")).toBe(true);
     expect(isAreaEligible("東京都", null)).toBe(true);
   });
+  it("市区町村が対象に含まれれば適格（自治体補助金）", () => {
+    expect(isAreaEligible("甲府市", "山梨県", "甲府市")).toBe(true);
+  });
+  it("都道府県も市区町村も対象外なら不適格", () => {
+    expect(isAreaEligible("東京都", "山梨県", "甲府市")).toBe(false);
+  });
 });
 
 describe("matchIndustry", () => {
@@ -101,6 +107,7 @@ describe("matchedInterests", () => {
 const baseProfile: BusinessProfile = {
   industry: "製造業",
   prefecture: "東京都",
+  city: null,
   employeeCount: 30,
   purposes: ["設備整備・IT導入をしたい"],
   interests: ["省力化"],
@@ -169,6 +176,7 @@ describe("scoreMatch", () => {
       {
         industry: null,
         prefecture: null,
+        city: null,
         employeeCount: null,
         purposes: [],
         interests: [],
@@ -177,5 +185,23 @@ describe("scoreMatch", () => {
     );
     expect(r.eligible).toBe(true);
     expect(r.score).toBeCloseTo(0.25, 5);
+  });
+
+  it("地元自治体の補助金は加点され根拠に出る", () => {
+    const r = scoreMatch(
+      { ...baseProfile, prefecture: "山梨県", city: "甲府市", industry: null },
+      {
+        usePurpose: null,
+        industry: null,
+        targetAreaSearch: "山梨県",
+        targetNumberOfEmployees: "中小企業者",
+        title: "甲府市DX推進補助金",
+        catchPhrase: null,
+      },
+    );
+    expect(r.eligible).toBe(true);
+    // base0.25 + local0.1 = 0.35（目的・業種一致なし）
+    expect(r.score).toBeCloseTo(0.35, 5);
+    expect(r.reasons.some((x) => x.includes("地元自治体"))).toBe(true);
   });
 });
