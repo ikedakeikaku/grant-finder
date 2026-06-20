@@ -42,6 +42,7 @@ create type notification_channel as enum ('email', 'line');
 
 create type notification_status as enum (
   'scheduled',
+  'processing',
   'sent',
   'failed',
   'skipped'
@@ -243,6 +244,7 @@ create table notifications (
   status notification_status not null default 'scheduled',
 
   scheduled_for timestamptz not null,
+  processing_started_at timestamptz,
   sent_at timestamptz,
 
   payload jsonb,
@@ -283,7 +285,7 @@ create policy subsidy_schedules_select_auth on subsidy_schedules
 create policy subsidy_predictions_select_auth on subsidy_predictions
   for select to authenticated using (true);
 
--- matches: 自分の事業のものだけ閲覧、dismissed の更新のみ許可
+-- matches: 自分の事業のものだけ閲覧。更新は下の RPC 経由で dismissed のみ許可。
 create policy matches_select_own on matches
   for select using (
     exists (
@@ -291,18 +293,25 @@ create policy matches_select_own on matches
       where b.id = matches.business_id and b.user_id = auth.uid()
     )
   );
-create policy matches_update_own on matches
-  for update using (
-    exists (
+
+create or replace function dismiss_match(p_match_id uuid, p_dismissed boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update matches m
+  set dismissed = p_dismissed
+  where m.id = p_match_id
+    and exists (
       select 1 from businesses b
-      where b.id = matches.business_id and b.user_id = auth.uid()
-    )
-  ) with check (
-    exists (
-      select 1 from businesses b
-      where b.id = matches.business_id and b.user_id = auth.uid()
-    )
-  );
+      where b.id = m.business_id and b.user_id = auth.uid()
+    );
+end;
+$$;
+revoke all on function dismiss_match(uuid, boolean) from public;
+grant execute on function dismiss_match(uuid, boolean) to authenticated;
 
 -- notifications: 自分の事業のものだけ閲覧(書き込みはサービスロール)
 create policy notifications_select_own on notifications

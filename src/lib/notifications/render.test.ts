@@ -47,4 +47,16 @@ describe("renderNotificationEmail", () => {
     });
     expect(r.html).toContain("A&amp;B&lt;補助&gt;");
   });
+
+  it("危険なURLスキームはリンクにしない", () => {
+    const r = renderNotificationEmail({
+      type: "new_match",
+      ...base,
+      subsidyUrl: "javascript:alert(1)",
+      appBaseUrl: "data:text/html,hello",
+    });
+    expect(r.text).not.toContain("javascript:");
+    expect(r.html).not.toContain("javascript:");
+    expect(r.html).not.toContain("data:text");
+  });
 });
