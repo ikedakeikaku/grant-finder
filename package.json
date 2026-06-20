@@ -15,8 +15,11 @@
     "format:check": "prettier --check .",
     "ingest": "tsx scripts/ingest-jgrants.ts",
     "seed": "tsx scripts/seed-curated.ts",
+    "seed:programs": "tsx scripts/seed-programs.ts",
     "matches": "tsx scripts/build-matches.ts",
     "predict": "tsx scripts/build-predictions.ts",
+    "proposals": "tsx scripts/build-proposals.ts",
+    "research:catalog": "tsx scripts/research-catalog.ts",
     "notify": "tsx scripts/process-notifications.ts"
   },
   "dependencies": {
@@ -44,6 +47,9 @@
     "vitest": "^4.1.9"
   },
   "pnpm": {
+    "overrides": {
+      "postcss": "8.5.15"
+    },
     "onlyBuiltDependencies": [
       "esbuild"
     ]

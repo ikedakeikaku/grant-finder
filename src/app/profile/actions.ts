@@ -62,7 +62,19 @@ export async function saveProfile(
     businessId = inserted.id as string;
   }
 
-  // 登録直後に提案を表示できるよう、即マッチを生成（失敗しても保存は妨げない）。
+  // 提案書（制度マスタベース）はバッチ build-proposals が深掘り生成する。
+  // 保存時に pending を立て、次回バッチで再生成させる（失敗しても保存は妨げない）。
+  try {
+    const admin = createSupabaseAdminClient();
+    await admin
+      .from("businesses")
+      .update({ proposal_status: "pending" })
+      .eq("id", businessId);
+  } catch (e) {
+    console.error("[profile] proposal_status 更新に失敗:", e);
+  }
+
+  // 登録直後にも live(jGrants) のマッチは即表示（失敗しても保存は妨げない）。
   try {
     const admin = createSupabaseAdminClient();
     const businessForMatch = {

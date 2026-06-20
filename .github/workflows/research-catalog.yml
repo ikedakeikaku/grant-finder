@@ -1,0 +1,41 @@
+name: research-catalog
+
+# 制度マスタの予算動向・公募日程を Web 調査で継続更新する（週次・低頻度）。
+# 1回あたり既定8件ずつ古いものから更新し、数週で全制度を巡回する。
+# Secrets: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY
+on:
+  schedule:
+    - cron: "0 20 * * 1" # 毎週月曜 05:00 JST (20:00 UTC 日曜)
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "今回更新する制度数"
+        required: false
+        default: "8"
+      all:
+        description: "全制度を対象にする(true で --all)"
+        required: false
+        default: "false"
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: 制度マスタ反映(新規分の取り込み)
+        run: pnpm seed:programs
+      - name: 予算動向・公募日程の調査更新
+        run: >
+          pnpm research:catalog
+          --limit ${{ github.event.inputs.limit || '8' }}
+          ${{ github.event.inputs.all == 'true' && '--all' || '' }}

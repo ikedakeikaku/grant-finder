@@ -7,6 +7,10 @@ import { createClient } from "@supabase/supabase-js";
  * ⚠️ Client Component やブラウザに絶対に渡さないこと(秘密鍵)。
  */
 export function createSupabaseAdminClient() {
+  if (typeof window !== "undefined") {
+    throw new Error("service_role クライアントはブラウザでは使用できません");
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) {
