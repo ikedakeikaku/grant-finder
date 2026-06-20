@@ -157,6 +157,19 @@ async function main(): Promise<void> {
   console.log(
     `[history] 終了済み含む履歴: ${histItems.size}件取得 / ${histInserted}件処理`,
   );
+
+  // 6. 鮮度更新: 締切が過ぎた補助金を closed にする。
+  //    取込は受付中のみ取得するため、締切が来て一覧から消えた行は更新されず
+  //    「受付中」のまま残る。これを防ぎ、古い情報を提案しないようにする。
+  const { error: closeErr } = await supabase
+    .from("subsidies")
+    .update({ status: "closed" })
+    .lt("acceptance_end_datetime", now.toISOString())
+    .neq("status", "closed")
+    .not("id", "like", "curated:%");
+  if (closeErr) throw new Error(`鮮度更新(closed) 失敗: ${closeErr.message}`);
+  console.log("[refresh] 締切超過を closed に更新");
+
   console.log("[done] 取込完了");
 }
 

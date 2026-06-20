@@ -8,9 +8,6 @@ import { isApplicationOffering } from "../core/offering";
 import { dedupeByScheduleKey } from "../core/dedupe";
 import { PREFECTURES } from "../core/constants";
 import { isCuratedJgrantsTitle } from "../curated";
-
-/** LLMに渡す予測候補の上限（max_tokens対策＋ノイズ削減） */
-const PREDICTION_CANDIDATE_POOL = 80;
 import {
   isRelevanceEnabled,
   rankRelevance,
@@ -19,6 +16,8 @@ import {
 
 /** 1事業者あたりに提案する上限件数 */
 export const MATCH_LIMIT = 10;
+/** LLMに渡す予測候補の上限（max_tokens対策＋ノイズ削減） */
+const PREDICTION_CANDIDATE_POOL = 80;
 /** LLM 関連性ランクにかける候補プールの上限 */
 const CANDIDATE_POOL = 60;
 /** 提案として採用する最低スコア（決定論・LLM共通の足切り） */
@@ -44,12 +43,17 @@ export type SubsidyForMatchWithId = SubsidyForMatch & { id: string };
 export async function fetchOpenSubsidiesForMatch(
   admin: SupabaseClient,
 ): Promise<SubsidyForMatchWithId[]> {
+  // status だけでなく締切日でもガード（status更新前でも締切超過を弾く）。
+  const nowIso = new Date().toISOString();
   const { data, error } = await admin
     .from("subsidies")
     .select(
       "id, name, schedule_key, acceptance_end_datetime, use_purpose, industry, target_area_search, target_number_of_employees, title, catch_phrase",
     )
-    .in("status", ["open", "closing_soon"]);
+    .in("status", ["open", "closing_soon"])
+    .or(
+      `acceptance_end_datetime.gte.${nowIso},acceptance_end_datetime.is.null`,
+    );
   if (error) throw new Error(`subsidies 取得失敗: ${error.message}`);
 
   // 新規応募できる公募のみ。キュレーション対象のjGrantsエントリ(不正確)は抑制。

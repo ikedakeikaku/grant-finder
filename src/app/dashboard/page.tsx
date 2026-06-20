@@ -120,6 +120,8 @@ export default async function DashboardPage() {
               ? new Date(s.acceptance_end_datetime)
               : null;
             const daysLeft = end ? differenceInCalendarDays(end, now) : null;
+            // 締切を過ぎた提案は表示しない（鮮度ガード）。
+            if (daysLeft != null && daysLeft < 0) return null;
             return (
               <li
                 key={m.id}
