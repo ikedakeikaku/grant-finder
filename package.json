@@ -20,6 +20,8 @@
     "predict": "tsx scripts/build-predictions.ts",
     "proposals": "tsx scripts/build-proposals.ts",
     "research:catalog": "tsx scripts/research-catalog.ts",
+    "research:tasks": "tsx scripts/research-tasks.ts",
+    "research:import": "tsx scripts/import-research.ts",
     "notify": "tsx scripts/process-notifications.ts"
   },
   "dependencies": {

@@ -20,6 +20,8 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       NOTIFY_FROM_EMAIL: ${{ vars.NOTIFY_FROM_EMAIL }}
       APP_BASE_URL: ${{ vars.APP_BASE_URL }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      # PROPOSALS_DEEP 未設定＝既定 'queue'：cronは従量APIで深掘りせず調査待ちに積みDiscord通知。
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
