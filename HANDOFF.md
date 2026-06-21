@@ -21,7 +21,13 @@
 日次 `scripts/`（tsx）: **ingest → seed(curated) → seed:programs → predict → matches → proposals → notify**
 - **制度マスタ `programs`**（`src/lib/catalog/programs.ts`＋`research-output.json`）: 提案の母集団。58制度（国14/東京11/大阪10/神奈川9/山梨14、active45・watch9・ended4）。並列Web調査＋検証で作成。`scripts/research-catalog.ts`(Sonnet 4.6+web_search)が予算動向/日程を巡回更新し`budget_signals`投入。
 - **提案エンジン `src/lib/matching/proposer.ts`**（Sonnet 4.6, relevance.ts後継）: profile×programs を読み「使える根拠・使えるか・準備物・時期・出典」を構造化出力。deep(Web)/light。`scripts/build-proposals.ts`が `proposals`＋`matches(kind=catalog)` を生成（pending=deep / 30日超=light / 直近readyはスキップ）。
-- **関心駆動の制度発掘 `src/lib/catalog/discover.ts`**（Sonnet 4.6+web_search）: build-proposals の **deepモードのみ**、登録者の関心（観光/雇用・人材/脱炭素 等）に合致するが未収録の制度をWeb調査で発掘→`programs`に永続化(source='discovered')→候補に合流。これで「カタログにある分しか提案しない」を脱し、需要からカタログが育つ。厚労省の**助成金**(キャリアアップ/人材開発支援/業務改善 等)・観光庁・自治体制度も拾う（スモーク確認済み）。
+- **関心駆動の制度発掘 `src/lib/catalog/discover.ts`**（Sonnet 4.6+web_search）: 登録者の関心（観光/雇用・人材/脱炭素 等）＋**所在地の市区町村**に合致するが未収録の制度をWeb調査で発掘→`programs`に永続化(source='discovered')→候補に合流。厚労省の**助成金**・観光庁・自治体/市区町村制度も拾う（スモーク確認済み）。
+
+### コスト方針（重要・従量API節約）
+深掘りWeb調査はトークン課金が高い。そこで **`build-proposals` の `PROPOSALS_DEEP`（既定 `queue`）** で分岐：
+- `queue`（既定）: deep対象はAPIを呼ばず `proposal_status='needs_research'` に積み、**Discordへ調査依頼通知**（`src/lib/notifications/discord.ts`, `DISCORD_WEBHOOK_URL`）。実際の調査は**あなたのClaude Code（定額・トークン課金なし）**で `/research-grants`（`.claude/commands/research-grants.md`）を実行＝`pnpm research:tasks`→WebSearch調査→`pnpm research:import <json>` でDB書き戻し。light(既存カタログ上の推論)のみ従量API。
+- `api`: 旧来どおり deep も従量APIで自動実行（即時だが高コスト）。
+- Vercelに公開しても成立（Vercel=Web/登録、Supabase=キュー、GitHub Actions=軽バッチ、Claude Code=重い調査）。`research-catalog`(週次予算調査)も従量APIなので必要時のみ手動 or 上限管理。
 - **通知**（`process-notifications.ts`＋`render.ts`）: `proposal_digest`(初回＋約月次・複数カード・控えめCTA)、catalog/予測の `next_open_from` 60日前 `pre_announce`、live(open)の締切30/14/7日前。重複は0004のDB制約＋25日ガードで防止。
 - 既存の live 経路（`ingest`/`build-matches`(kind=open)/`build-predictions`/`curated.ts`(jGrants抑制)）も併存。
 - core pure: `core/{matching,deadline,notify-plan,prediction,offering,dedupe,constants}.ts`（全テスト付き）。`matching/relevance.ts`は旧ランカー（proposerへ移行済み・未使用化）。

@@ -18,6 +18,7 @@ import {
   isDiscoveryEnabled,
 } from "../src/lib/catalog/discover";
 import { safeHttpUrl } from "../src/lib/url";
+import { notifyDiscord } from "../src/lib/notifications/discord";
 
 /**
  * 提案書生成バッチ。提案エンジン(proposer)で事業者ごとに「使える根拠つき」の
@@ -182,6 +183,8 @@ async function discoverForBusiness(
 }
 
 function decideMode(b: BusinessRow, now: Date): "deep" | "light" | "skip" {
+  // 既に調査待ちに積んである（Claude Code 待ち）ものは触らない。
+  if (b.proposal_status === "needs_research") return "skip";
   if (b.proposal_status === "pending" || !b.proposal_refreshed_at)
     return "deep";
   const age = differenceInCalendarDays(now, new Date(b.proposal_refreshed_at));
@@ -339,6 +342,10 @@ async function main(): Promise<void> {
     return;
   }
 
+  // 深掘り(Web調査)の実行先。既定 'queue'＝APIを使わず Claude Code(定額) に回す。
+  // 'api' を明示した時だけ従量APIで deep を実行する。light(既存カタログ上の推論)は常にAPI。
+  const deepMode = process.env.PROPOSALS_DEEP === "api" ? "api" : "queue";
+
   const { data, error } = await admin
     .from("businesses")
     .select(
@@ -349,9 +356,25 @@ async function main(): Promise<void> {
 
   let processed = 0;
   let items = 0;
+  const queued: string[] = [];
   for (const b of businesses) {
     const mode = force ? "deep" : decideMode(b, now);
     if (mode === "skip") continue;
+
+    // queue 方式では deep をAPIで実行せず「調査待ち」に積む（Claude Codeで処理）。
+    if (mode === "deep" && deepMode === "queue") {
+      const { error: qErr } = await admin
+        .from("businesses")
+        .update({ proposal_status: "needs_research" })
+        .eq("id", b.id);
+      if (qErr) {
+        console.error(`[build-proposals] 調査待ち登録失敗 ${b.id}: ${qErr.message}`);
+        continue;
+      }
+      queued.push(b.id);
+      continue;
+    }
+
     try {
       items += await processBusiness(admin, b, programs, mode, now);
       processed++;
@@ -368,8 +391,15 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `[build-proposals] 事業者 ${processed}/${businesses.length} 件を処理、提案 ${items} 件`,
+    `[build-proposals] 事業者 処理${processed} / 調査待ち${queued.length} / 提案${items}件 (deep=${deepMode})`,
   );
+
+  if (queued.length > 0) {
+    await notifyDiscord(
+      `🔎 補助金の深掘り調査依頼が ${queued.length}件 あります。\n` +
+        `ターミナルで Claude Code を開き \`/research-grants\` を実行してください（または \`pnpm research:tasks\` で一覧）。`,
+    );
+  }
 }
 
 main().catch((err) => {
