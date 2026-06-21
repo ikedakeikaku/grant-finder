@@ -51,7 +51,11 @@ begin
 end;
 $$;
 
-create or replace view private.leads as
+-- PostgreSQL cannot insert columns into the middle of an existing view with
+-- CREATE OR REPLACE VIEW, so recreate this admin-only view explicitly.
+drop view if exists private.leads;
+
+create view private.leads as
 select
   u.id as user_id,
   u.email as auth_email,
@@ -86,4 +90,5 @@ comment on view private.leads is
 revoke all on private.leads from public;
 revoke all on private.leads from anon;
 revoke all on private.leads from authenticated;
+grant usage on schema private to service_role;
 grant select on private.leads to service_role;
