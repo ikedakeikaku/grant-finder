@@ -32,9 +32,13 @@ jobs:
         run: pnpm ingest
       - name: 主要制度のキュレーション反映
         run: pnpm seed
+      - name: 制度マスタ反映
+        run: pnpm seed:programs
       - name: 公募前予測の生成
         run: pnpm predict
-      - name: マッチ生成
+      - name: マッチ生成(live jGrants)
         run: pnpm matches
+      - name: 提案書生成(制度マスタ×事業者)
+        run: pnpm proposals
       - name: 通知作成・送信
         run: pnpm notify

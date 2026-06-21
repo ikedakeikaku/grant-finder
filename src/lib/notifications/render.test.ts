@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatJst, renderNotificationEmail } from "./render";
+import {
+  formatJst,
+  renderNotificationEmail,
+  renderProposalDigestEmail,
+} from "./render";
 
 const now = new Date("2026-06-19T09:00:00+09:00");
 
@@ -9,6 +13,33 @@ describe("formatJst", () => {
     expect(s).toContain("2026");
     expect(s).toContain("7");
     expect(s).toContain("24");
+  });
+});
+
+describe("renderProposalDigestEmail", () => {
+  it("テキスト本文でも危険な公式URLを出さない", () => {
+    const r = renderProposalDigestEmail({
+      businessName: "テスト商店",
+      summary: "総括",
+      items: [
+        {
+          name: "制度A",
+          fitReason: "合う",
+          usability: "使える",
+          prepare: [],
+          scheduleNote: "未定",
+          subsidyMax: 1_000_000,
+          subsidyRate: "1/2",
+          officialUrl: "javascript:alert(1)",
+          isLargeAmount: false,
+          isStartup: false,
+        },
+      ],
+      appBaseUrl: "https://example.com/dashboard",
+      now,
+    });
+    expect(r.text).not.toContain("javascript:");
+    expect(r.html).not.toContain("javascript:");
   });
 });
 
@@ -46,5 +77,17 @@ describe("renderNotificationEmail", () => {
       subsidyTitle: "A&B<補助>",
     });
     expect(r.html).toContain("A&amp;B&lt;補助&gt;");
+  });
+
+  it("危険なURLスキームはリンクにしない", () => {
+    const r = renderNotificationEmail({
+      type: "new_match",
+      ...base,
+      subsidyUrl: "javascript:alert(1)",
+      appBaseUrl: "data:text/html,hello",
+    });
+    expect(r.text).not.toContain("javascript:");
+    expect(r.html).not.toContain("javascript:");
+    expect(r.html).not.toContain("data:text");
   });
 });

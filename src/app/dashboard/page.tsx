@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { differenceInCalendarDays } from "date-fns";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatJst } from "@/lib/notifications/render";
+import { safeHttpUrl } from "@/lib/url";
 import { signOut } from "../auth/actions";
 
 interface MatchRow {
@@ -31,9 +32,31 @@ interface PredictedRow {
   } | null;
 }
 
+interface ProposalItemRow {
+  programId: string;
+  name: string;
+  fitReason: string;
+  usability: string;
+  prepare: string[];
+  scheduleNote: string;
+  subsidyMax: number | null;
+  subsidyRate: string | null;
+  officialUrl: string | null;
+  status: string | null;
+  isLargeAmount: boolean;
+  isStartup: boolean;
+}
+
 function formatMan(yen: number | null): string {
   if (yen == null) return "—";
   return `${Math.round(yen / 10000).toLocaleString("ja-JP")}万円`;
+}
+
+function itemTags(it: ProposalItemRow): string[] {
+  const t: string[] = [];
+  if (it.isLargeAmount) t.push("大型");
+  if (it.isStartup) t.push("創業");
+  return t;
 }
 
 function predictedMonth(iso: string | null): string {
@@ -51,10 +74,23 @@ export default async function DashboardPage() {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name")
+    .select("id, name, proposal_status")
     .eq("user_id", user.id)
     .maybeSingle();
   if (!business) redirect("/profile");
+
+  // 調査済みの提案書（制度マスタベース）
+  const { data: proposalData } = await supabase
+    .from("proposals")
+    .select("summary, items, generated_at")
+    .eq("business_id", business.id)
+    .maybeSingle();
+  const proposal = proposalData as {
+    summary: string | null;
+    items: ProposalItemRow[] | null;
+    generated_at: string | null;
+  } | null;
+  const proposalItems = (proposal?.items ?? []).filter(Boolean);
 
   const { data } = await supabase
     .from("matches")
@@ -102,6 +138,94 @@ export default async function DashboardPage() {
         </div>
       </header>
 
+      <section className="mt-8">
+        <h2 className="text-lg font-bold">🎯 あなたへの補助金提案書</h2>
+        {proposalItems.length === 0 ? (
+          <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-6 text-sm text-gray-600">
+            {business.proposal_status === "ready"
+              ? "現時点で特におすすめできる制度が見つかりませんでした。条件の見直しでより多くの提案が得られる場合があります。"
+              : "提案書を準備中です。調査が完了するとここに表示され、メールでもお届けします。"}
+          </div>
+        ) : (
+          <>
+            {proposal?.summary && (
+              <p className="mt-2 text-sm text-gray-700">{proposal.summary}</p>
+            )}
+            <ul className="mt-4 space-y-4">
+              {proposalItems.map((it) => {
+                const url = safeHttpUrl(it.officialUrl);
+                const money = [
+                  `補助上限 ${formatMan(it.subsidyMax)}`,
+                  ...(it.subsidyRate ? [`補助率 ${it.subsidyRate}`] : []),
+                ].join(" / ");
+                return (
+                  <li
+                    key={it.programId}
+                    className="rounded-lg border border-emerald-200 bg-emerald-50/30 p-5 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="font-semibold leading-snug">
+                        {url ? (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-emerald-900 hover:underline"
+                          >
+                            {it.name}
+                          </a>
+                        ) : (
+                          it.name
+                        )}
+                      </h3>
+                      <div className="flex shrink-0 gap-1">
+                        {itemTags(it).map((t) => (
+                          <span
+                            key={t}
+                            className="rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-700"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600">{money}</p>
+                    {it.scheduleNote && (
+                      <p className="mt-2 text-sm">
+                        <span className="text-gray-500">時期：</span>
+                        {it.scheduleNote}
+                      </p>
+                    )}
+                    {it.fitReason && (
+                      <p className="mt-1 text-sm">
+                        <span className="text-gray-500">合う理由：</span>
+                        {it.fitReason}
+                      </p>
+                    )}
+                    {it.usability && (
+                      <p className="mt-1 text-sm">
+                        <span className="text-gray-500">使えるか：</span>
+                        {it.usability}
+                      </p>
+                    )}
+                    {it.prepare && it.prepare.length > 0 && (
+                      <p className="mt-1 text-sm">
+                        <span className="text-gray-500">ご準備：</span>
+                        {it.prepare.join("、")}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="mt-3 text-xs text-gray-500">
+              公募が近づいた制度はメールでお知らせします。申請のご相談も承っています。
+            </p>
+          </>
+        )}
+      </section>
+
+      <h2 className="mt-12 text-lg font-bold">📨 現在受付中（Jグランツ）</h2>
       {matches.length === 0 ? (
         <div className="mt-10 rounded-lg border border-gray-200 bg-gray-50 p-6 text-sm text-gray-600">
           現在受付中で条件に合う補助金は見つかりませんでした。
@@ -122,6 +246,7 @@ export default async function DashboardPage() {
             const daysLeft = end ? differenceInCalendarDays(end, now) : null;
             // 締切を過ぎた提案は表示しない（鮮度ガード）。
             if (daysLeft != null && daysLeft < 0) return null;
+            const detailUrl = safeHttpUrl(s.front_subsidy_detail_page_url);
             return (
               <li
                 key={m.id}
@@ -129,9 +254,9 @@ export default async function DashboardPage() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <h2 className="font-semibold leading-snug">
-                    {s.front_subsidy_detail_page_url ? (
+                    {detailUrl ? (
                       <a
-                        href={s.front_subsidy_detail_page_url}
+                        href={detailUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-800 hover:underline"
