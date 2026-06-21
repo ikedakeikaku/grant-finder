@@ -236,6 +236,7 @@ async function enqueueProposalDigest(
     .from("notifications")
     .select("business_id, created_at")
     .eq("type", "proposal_digest")
+    .in("status", ["scheduled", "processing", "sent"])
     .gte("created_at", cutoff);
   if (rErr) throw new Error(`digest履歴 取得失敗: ${rErr.message}`);
   const recentSet = new Set(
@@ -256,13 +257,16 @@ async function enqueueProposalDigest(
     });
   }
 
-  if (toInsert.length > 0) {
-    const { error: insErr } = await supabase
-      .from("notifications")
-      .insert(toInsert);
-    if (insErr) throw new Error(`proposal_digest 作成失敗: ${insErr.message}`);
+  let inserted = 0;
+  for (const row of toInsert) {
+    const { error: insErr } = await supabase.from("notifications").insert(row);
+    if (insErr) {
+      if (insErr.code === "23505") continue; // 同時実行によるpending重複はDB制約に任せる。
+      throw new Error(`proposal_digest 作成失敗: ${insErr.message}`);
+    }
+    inserted++;
   }
-  return toInsert.length;
+  return inserted;
 }
 
 async function fetchProposal(

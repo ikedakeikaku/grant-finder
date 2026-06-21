@@ -61,6 +61,32 @@ describe("normalizeProposal", () => {
     expect(out.items[0]!.sources).toEqual([]);
   });
 
+  it("長い文字列を切り詰め、危険なsource URLを捨てる", () => {
+    const out = normalizeProposal(
+      {
+        summary: "s".repeat(1200),
+        items: [
+          {
+            programId: "prog:a",
+            fitReason: "f".repeat(700),
+            eligibility: "e".repeat(1000),
+            usability: "u".repeat(1000),
+            prepare: Array.from({ length: 12 }, (_, i) => `prepare${i}`),
+            sources: ["https://example.com/a", "javascript:alert(1)"],
+          },
+        ],
+      },
+      candidates,
+      10,
+    );
+    expect(out.summary.length).toBe(1000);
+    expect(out.items[0]!.fitReason.length).toBe(500);
+    expect(out.items[0]!.eligibility.length).toBe(800);
+    expect(out.items[0]!.usability.length).toBe(800);
+    expect(out.items[0]!.prepare.length).toBe(8);
+    expect(out.items[0]!.sources).toEqual(["https://example.com/a"]);
+  });
+
   it("空入力でも落ちない", () => {
     const out = normalizeProposal({}, candidates, 10);
     expect(out).toEqual({ summary: "", items: [] });

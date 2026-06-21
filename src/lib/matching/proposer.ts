@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { BusinessProfile } from "../core/matching";
+import { safeHttpUrl } from "../url";
 
 /**
  * 提案エンジン（Claude Sonnet 4.6）。
@@ -114,13 +115,19 @@ const SUBMIT_TOOL = {
   input_schema: {
     type: "object" as const,
     properties: {
-      summary: { type: "string", description: "提案全体の総括（2〜3文・日本語）" },
+      summary: {
+        type: "string",
+        description: "提案全体の総括（2〜3文・日本語）",
+      },
       items: {
         type: "array",
         items: {
           type: "object",
           properties: {
-            programId: { type: "string", description: "カタログ候補の id をそのまま" },
+            programId: {
+              type: "string",
+              description: "カタログ候補の id をそのまま",
+            },
             fitReason: { type: "string", description: "この事業者に合う理由" },
             eligibility: {
               type: "string",
@@ -244,6 +251,32 @@ function asStringArray(v: unknown): string[] {
   return v.filter((x): x is string => typeof x === "string");
 }
 
+function cleanText(v: unknown, max: number): string {
+  if (typeof v !== "string") return "";
+  return v
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .trim()
+    .slice(0, max);
+}
+
+function cleanTextArray(
+  v: unknown,
+  maxItems: number,
+  maxText: number,
+): string[] {
+  return asStringArray(v)
+    .map((s) => cleanText(s, maxText))
+    .filter(Boolean)
+    .slice(0, maxItems);
+}
+
+function cleanUrlArray(v: unknown, maxItems: number): string[] {
+  return asStringArray(v)
+    .map((s) => safeHttpUrl(s))
+    .filter((s): s is string => !!s)
+    .slice(0, maxItems);
+}
+
 /** LLM出力を検証・整形する。候補に無い programId は捨てる（純粋関数・テスト可能）。 */
 export function normalizeProposal(
   input: unknown,
@@ -265,19 +298,19 @@ export function normalizeProposal(
     seen.add(programId);
     items.push({
       programId,
-      fitReason: typeof it.fitReason === "string" ? it.fitReason : "",
-      eligibility: typeof it.eligibility === "string" ? it.eligibility : "",
-      usability: typeof it.usability === "string" ? it.usability : "",
-      prepare: asStringArray(it.prepare),
-      scheduleNote: typeof it.scheduleNote === "string" ? it.scheduleNote : "",
+      fitReason: cleanText(it.fitReason, 500),
+      eligibility: cleanText(it.eligibility, 800),
+      usability: cleanText(it.usability, 800),
+      prepare: cleanTextArray(it.prepare, 8, 160),
+      scheduleNote: cleanText(it.scheduleNote, 400),
       score: clamp01(it.score),
       confidence: clamp01(it.confidence),
-      sources: asStringArray(it.sources),
+      sources: cleanUrlArray(it.sources, 10),
     });
   }
   items.sort((a, b) => b.score - a.score);
   return {
-    summary: typeof obj.summary === "string" ? obj.summary : "",
+    summary: cleanText(obj.summary, 1000),
     items: items.slice(0, max),
   };
 }

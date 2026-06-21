@@ -6,9 +6,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "人手不足の中小企業が、自社の課題に合わせたオーダーメイドの省力化設備・システムを導入し、労働生産性を向上させるための投資を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者(従業員規模に応じ補助上限が変動)",
     "subsidyRate": "1/2(小規模事業者・再生事業者は2/3、賃上げ特例で2/3)。補助額1,500万円超の部分は1/3",
     "subsidyMax": "100000000",
@@ -20,9 +18,7 @@
       "GビズIDプライム",
       "事業計画書"
     ],
-    "applicationFrames": [
-      "一般型(オーダーメイド)"
-    ],
+    "applicationFrames": ["一般型(オーダーメイド)"],
     "typicalSchedule": "複数回公募。令和7年度に第5回(2025年12月公募要領公開)。第7回は2026年6月公募開始・7月受付の見込み。採択は受付締切から数ヶ月後。",
     "budgetBasis": "令和8年度概算要求でも省力化投資が重点。生産性革命推進事業の一環として継続実施見込み。二階建て構造(カタログ型/一般型)継続見通し。",
     "officialUrl": "https://shoryokuka.smrj.go.jp/ippan/",
@@ -48,9 +44,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "革新的な製品・サービス開発(旧ものづくり補助金)から新分野・新市場への進出(旧新事業進出補助金)、海外展開までを一体的・シームレスに支援。設備投資等が対象。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者",
     "subsidyRate": "革新的新製品・サービス枠1/2(小規模2/3)、新事業進出枠1/2、グローバル枠2/3(賃上げ特例で各枠2/3に引上げ)",
     "subsidyMax": "90000000",
@@ -91,9 +85,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "小規模事業者が経営計画に基づき行う販路開拓・業務効率化(生産性向上)の取組経費を補助。商工会・商工会議所の支援を受けて経営計画を作成。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "小規模事業者(商業・サービス業5人以下、製造業その他20人以下)",
     "subsidyRate": "2/3(賃金引上げ特例のうち赤字事業者は3/4)",
     "subsidyMax": "5000000",
@@ -136,9 +128,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "事業承継・M&Aを契機とした設備投資・販路拡大、M&A時の専門家活用(仲介・FA・DD費用)、経営統合(PMI)、廃業・再チャレンジを支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者",
     "subsidyRate": "1/2または2/3(小規模事業者は2/3)",
     "subsidyMax": "20000000",
@@ -180,9 +170,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "工場・事業場単位での省エネ・非化石転換に向けた設備・システムの更新導入。先進設備、オーダーメイド設備、エネルギー需要最適化等を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・大企業等（年間エネルギー使用量等の要件あり）",
     "subsidyRate": "先進: 中小2/3・大企業1/2 / 一般・指定設備: 中小1/2・大企業1/3（投資回収年数で1/3等に変動）",
     "subsidyMax": "1500000000（先進・一般・中小企業投資促進枠 単年15億円。非化石転換は20億円。複数年事業は事業全体30億円〔非化石40億円〕。エネルギー需要最適化型は1億円）",
@@ -227,9 +215,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "あらかじめSIIが定める省エネ性能基準を満たす指定設備（高効率空調・ボイラ・変圧器・冷凍冷蔵・LED照明・産業用モータ等）への更新を簡易に支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・大企業等",
     "subsidyRate": "1/3以内（設備区分により定額・上限あり）",
     "subsidyMax": "100000000（事業全体の上限1億円。設備区分ごとに補助単価・上限が設定。補助下限あり）",
@@ -240,9 +226,7 @@
       "GビズID",
       "事業計画書（簡易）"
     ],
-    "applicationFrames": [
-      "設備単位型"
-    ],
+    "applicationFrames": ["設備単位型"],
     "typicalSchedule": "工場・事業場型と同時期に公募。FY2026は1次2026/3/30〜4/27（終了）、2次は2026年6月上旬〜7月上旬予定。複数回公募。",
     "budgetBasis": "新規採択は令和7年度補正予算で執行中。",
     "officialUrl": "https://sii.or.jp/setsubi07r/",
@@ -268,9 +252,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "工場・事業場等への業務・産業用蓄電システム（PCS合計出力100kW未満の小規模）導入を支援し、再エネ活用・電力需給調整（DR）を促進。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・大企業等",
     "subsidyRate": "目標価格以下の購入で定額（kWh単価基準）/ 上限あり",
     "subsidyMax": "",
@@ -280,9 +262,7 @@
       "補助事業ポータル・SIIアカウント登録",
       "GビズID"
     ],
-    "applicationFrames": [
-      "業務産業用蓄電システム導入支援"
-    ],
+    "applicationFrames": ["業務産業用蓄電システム導入支援"],
     "typicalSchedule": "FY2026は2026/3/24〜10/30と長期間の通年型公募（予算上限到達で早期終了の可能性）。",
     "budgetBasis": "令和7年度補正予算で執行中。",
     "officialUrl": "https://sii.or.jp/DRchikudenchi_gyousan07r/",
@@ -306,9 +286,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "持続的な賃上げに向け、省力化等による労働生産性の抜本的向上と事業規模拡大のための大規模投資（建物・設備・システム等）を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中堅・中小企業、スタートアップ（設立20年以内でVC/CVCが株主等）",
     "subsidyRate": "1/3以内",
     "subsidyMax": "5000000000（1企業あたり上限50億円）",
@@ -319,10 +297,7 @@
       "事業計画書",
       "GビズID"
     ],
-    "applicationFrames": [
-      "一般枠",
-      "100億宣言企業枠"
-    ],
+    "applicationFrames": ["一般枠", "100億宣言企業枠"],
     "typicalSchedule": "例年2月下旬〜3月下旬に公募。FY2025=第5次2026/2/27〜3/27（採択発表2026/5/21、採択77/198・倍率2.6倍）。第6次は2026年夏頃公募予定と事務局予告。",
     "budgetBasis": "経済産業省所管で継続実施。第6次公募が2026年夏頃に予定されており実施確度が高い。",
     "officialUrl": "https://seichotoushi-hojo.jp/",
@@ -348,9 +323,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "新市場・高付加価値分野への新事業進出、革新的な新製品・サービス開発、海外展開（グローバル）に必要な設備投資等を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者等",
     "subsidyRate": "原則1/2〜2/3（小規模・再生は2/3、賃金特例で2/3に引上げ）",
     "subsidyMax": "90000000（新事業進出・グローバル枠 従業員101人以上で7000万円、大幅賃上げ特例時9000万円。革新的新製品・サービス枠は51人以上2500万円〔特例3500万円〕）",
@@ -393,9 +366,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "人手不足解消に向けたオーダーメイド設備・システム等による省力化投資を支援し、労働生産性向上と賃上げを促進。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者等",
     "subsidyRate": "中小1/2 / 小規模・再生2/3",
     "subsidyMax": "100000000（従業員規模別750万円〜8000万円、大幅賃上げ特例適用で最大1億円）",
@@ -407,9 +378,7 @@
       "事業計画書",
       "GビズID"
     ],
-    "applicationFrames": [
-      "一般型"
-    ],
+    "applicationFrames": ["一般型"],
     "typicalSchedule": "FY2026は第7回が2026年6月下旬公募開始・7月上旬受付開始・7月下旬締切。複数回公募。",
     "budgetBasis": "中小企業生産性革命推進事業として継続実施中。中小機構が事務局。",
     "officialUrl": "https://shoryokuka.smrj.go.jp/ippan/",
@@ -435,9 +404,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "あらかじめ登録されたカタログ掲載製品（汎用的な省力化機器）の導入を簡易な手続きで支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者等",
     "subsidyRate": "1/2（製品ごとに補助上限額設定）",
     "subsidyMax": "15000000（21人以上1000万円〔大幅賃上げ1500万円〕、6〜20人750万円〔同1000万円〕、5人以下500万円〔同750万円〕／2026/3/19改定後）",
@@ -448,9 +415,7 @@
       "GビズID",
       "労働生産性向上目標"
     ],
-    "applicationFrames": [
-      "カタログ注文型"
-    ],
+    "applicationFrames": ["カタログ注文型"],
     "typicalSchedule": "通年型で随時申請受付。2026/3/19に補助上限・賃上げ定義を改定。",
     "budgetBasis": "中小企業生産性革命推進事業として継続実施中。中小機構が事務局。",
     "officialUrl": "https://shoryokuka.smrj.go.jp/catalog/revision_260319/",
@@ -474,9 +439,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "創業後一定期間内（特定創業支援を受けた）小規模事業者の販路開拓・生産性向上の取組（広告・設備・展示会等）を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "小規模事業者（特定創業支援等事業の支援を受けた創業者）",
     "subsidyRate": "2/3",
     "subsidyMax": "2500000（上限200万円、インボイス特例該当で250万円）",
@@ -487,9 +450,7 @@
       "事業計画書（商工会・商工会議所の支援）",
       "GビズID"
     ],
-    "applicationFrames": [
-      "創業型"
-    ],
+    "applicationFrames": ["創業型"],
     "typicalSchedule": "FY2026は第4回が2026/11/5受付開始・2026/12/15締切（事業支援計画書〔様式4〕発行締切12/4）。年1〜2回公募。",
     "budgetBasis": "令和7年度補正予算で継続実施中。創業支援の国の主力補助金。",
     "officialUrl": "https://r6.jizokukahojokin.info/sogyo/",
@@ -515,9 +476,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "事業承継・M&A・PMI（経営統合）・廃業を契機とした経営革新や専門家活用を支援。承継・買収後の新たな取組（実質的な創業含む）に活用可。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者等",
     "subsidyRate": "1/2〜2/3（枠により変動）",
     "subsidyMax": "20000000（上限最大2000万円。枠・小規模売り手支援類型等の組合せで決定）",
@@ -560,9 +519,7 @@
     "prefecture": "",
     "areaSearch": "全国",
     "purpose": "（過去制度）認定連携創業支援等事業者が行う創業支援事業（セミナー・相談窓口運営等）の経費を支援。創業者個人ではなく支援事業者向け。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "認定連携創業支援等事業者（商工会議所・金融機関・NPO等の支援機関）",
     "subsidyRate": "",
     "subsidyMax": "",
@@ -581,9 +538,7 @@
     "isLargeAmount": false,
     "isStartup": true,
     "unifiedWith": "創業者個人向けの国の支援は持続化補助金＜創業型＞が事実上の中心。本補助金は支援事業者向けで現在は休止的。",
-    "sources": [
-      "https://www.chusho.meti.go.jp/keiei/chiiki/index.html"
-    ],
+    "sources": ["https://www.chusho.meti.go.jp/keiei/chiiki/index.html"],
     "notes": "出典: 中小企業庁。検証: FY2026の国直轄公募はWeb検索でも確認できず（実施の確証なし）。confidence低・status=watch据置（やや引下げ）。創業者本人向けではない点に注意。数値は確認不可のため空欄。"
   },
   {
@@ -593,9 +548,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "都内での創業初期に必要な経費（賃借料・広告費・器具備品・人件費・専門家指導費・市場調査費等）の一部を助成し、開業を後押しする",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "都内創業予定者又は創業して5年未満の中小企業者等",
     "subsidyRate": "2/3",
     "subsidyMax": "4000000",
@@ -604,9 +557,7 @@
       "TOKYO創業ステーション事業計画書策定支援の終了 等いずれかの要件充足（インキュベーション施設入居/都・区市町村の創業融資利用/認定特定創業支援事業の支援）",
       "GビズID（Jグランツ電子申請）"
     ],
-    "applicationFrames": [
-      "創業助成事業（単一枠）"
-    ],
+    "applicationFrames": ["創業助成事業（単一枠）"],
     "typicalSchedule": "例年 春(4月)と秋(9〜10月)の年2回公募。令和8年度は第1回 4/7〜4/16、第2回 9/29〜10/8",
     "budgetBasis": "令和8年度も例年どおり継続実施。第1回・第2回の公募スケジュールが公表済みで確実に実施（公社・都プレス・補助金ポータルで第2回 9/29〜10/8・採択200社を確認）",
     "officialUrl": "https://www.tokyo-kosha.or.jp/support/josei/jigyo/sogyo.html",
@@ -631,9 +582,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "中小規模事業所の省エネ設備導入（高効率空調・LED照明・断熱窓等）と運用改善（人感センサー等）に要する設計費・設備費・工事費を助成",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業等（学校法人・公益財団法人・医療法人・社会福祉法人等を含む）／共同実施のリース・ESCO事業者",
     "subsidyRate": "3/4（区分により2/3）",
     "subsidyMax": "45000000",
@@ -671,9 +620,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "製品・サービスの質的向上や生産能力拡大のための機械装置・器具備品・ソフトウェア等の設備導入経費を助成し、生産性向上・競争力強化を支援",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "都内で2年以上事業を継続している中小企業者等（小規模企業者は補助率優遇）",
     "subsidyRate": "3/4（小規模は4/5）",
     "subsidyMax": "200000000",
@@ -711,9 +658,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "都・公社の評価・支援を受けた製品や成長産業分野（イノベーションマップ該当）の自社製品・技術の販路開拓に向け、展示会出展費・販売促進費（EC出店初期登録料・サイト制作・広告・動画・印刷物等）を助成",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "都内中小企業者等（都・公社の支援/認定を受けた企業 又は 成長産業分野の企業）",
     "subsidyRate": "1/2",
     "subsidyMax": "3000000",
@@ -723,9 +668,7 @@
       "展示会等参加費の申請が必須",
       "GビズID（Jグランツ電子申請）"
     ],
-    "applicationFrames": [
-      "市場開拓助成事業（単一枠）"
-    ],
+    "applicationFrames": ["市場開拓助成事業（単一枠）"],
     "typicalSchedule": "例年 春(5月頃)に公募。令和8年度は 5/15〜5/29",
     "budgetBasis": "令和8年度実施済み（5/15公募開始・5/29締切は終了）。例年継続のため次年度も実施見込み。令和8年度から販売促進費が対象拡大",
     "officialUrl": "https://www.tokyo-kosha.or.jp/support/josei/jigyo/shijo.html",
@@ -750,9 +693,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "都内中小企業の販路開拓のため、展示会出展に要する費用の一部を助成（セミナー・商談会とセットの経営力強化支援）",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "都内中小企業者等",
     "subsidyRate": "2/3",
     "subsidyMax": "1500000",
@@ -787,9 +728,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "都内中小企業等の事業活動のデジタル化促進のため、デジタルツール（ソフトウェア・クラウドサービス・専用機器等）の新規導入経費を助成",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業・個人事業主・中小企業団体等",
     "subsidyRate": "1/2（要件により2/3）",
     "subsidyMax": "1500000",
@@ -798,9 +737,7 @@
       "デジタルツールの新規導入",
       "GビズID（Jグランツ電子申請）"
     ],
-    "applicationFrames": [
-      "中小企業デジタル導入促進補助事業（単一枠）"
-    ],
+    "applicationFrames": ["中小企業デジタル導入促進補助事業（単一枠）"],
     "typicalSchedule": "令和8年度は年複数回。第1回 6/11〜7/3",
     "budgetBasis": "令和8年度第1回(6/11〜7/3)の公募受付中。公社プレス・都プレス・補助金ポータルで確認でき確実に実施",
     "officialUrl": "https://www.tokyo-kosha.or.jp/support/josei/jigyo/digital-tool.html",
@@ -826,9 +763,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "DX推進に向け従業員にデジタル関連研修を受講させた際の受講料・教材費等を助成し、社内デジタル人材育成を支援",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "都内中小企業・個人事業主",
     "subsidyRate": "3/4",
     "subsidyMax": "1000000",
@@ -864,9 +799,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "事業承継・経営改善に係る外部専門家への委託費等を助成し、円滑な事業承継（親族内・従業員・第三者承継/M&A）を支援",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "都内中小企業者（承継検討・承継予定・譲受予定の各タイプ）",
     "subsidyRate": "2/3（小規模企業者の企業価値・事業価値算定は10/10）",
     "subsidyMax": "2000000",
@@ -905,10 +838,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都",
     "purpose": "省エネ性能の高い「東京ゼロエミ住宅」を新築する建築主に費用の一部を助成し、住宅の脱炭素化を促進",
-    "targetIndustries": [
-      "建設業",
-      "不動産業"
-    ],
+    "targetIndustries": ["建設業", "不動産業"],
     "targetSize": "都内新築住宅の建築主（個人・事業者）",
     "subsidyRate": "",
     "subsidyMax": "",
@@ -917,9 +847,7 @@
       "床面積合計2,000平方メートル未満の新築住宅",
       "太陽光発電（機能性PV）・蓄電池等の加算要件"
     ],
-    "applicationFrames": [
-      "東京ゼロエミ住宅 水準別（戸建/集合）"
-    ],
+    "applicationFrames": ["東京ゼロエミ住宅 水準別（戸建/集合）"],
     "typicalSchedule": "令和8年度継続実施。令和8年4月1日から申請受付開始（年度を通じて受付、予算到達次第終了）",
     "budgetBasis": "令和8年度の普及促進事業として実施。3月都プレスで公表、令和8年4月1日受付開始を確認",
     "officialUrl": "https://www.tokyo-co2down.jp/subsidy/tokyo_zero_emission_house/tokyo_zero_emission_house_r08_fukyu/",
@@ -943,9 +871,7 @@
     "prefecture": "東京都",
     "areaSearch": "東京都中央区",
     "purpose": "区内中小企業・個人事業主が新規にホームページを作成、又は既存サイトを全面改修する際の制作費用の一部を補助",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中央区内の中小企業者・個人事業主",
     "subsidyRate": "1/2（創業枠は2/3）",
     "subsidyMax": "300000",
@@ -981,16 +907,11 @@
     "prefecture": "東京都",
     "areaSearch": "東京都世田谷区",
     "purpose": "区内中小事業者の経営支援として、ITを活用した販路拡大（広告宣伝・サイト制作・EC出店・動画制作等）やビジネスマッチングイベント出展等の経費を補助",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "世田谷区内に事務所・事業所を有する中小事業者・個人事業主",
     "subsidyRate": "1/2",
     "subsidyMax": "200000",
-    "keyRequirements": [
-      "区内に事業所があること",
-      "各事業ごとに1回限り"
-    ],
+    "keyRequirements": ["区内に事業所があること", "各事業ごとに1回限り"],
     "applicationFrames": [
       "ITを活用した販路拡大支援",
       "生産性向上設備導入支援",
@@ -1019,9 +940,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "賃上げ原資確保に向け、生産性向上・売上拡大（利益率向上）につながる設備投資・システム導入・販路開拓・研修等の取組経費を補助",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者（個人事業主含む・府内で事業を行う者）",
     "subsidyRate": "2/3以内",
     "subsidyMax": "5000000",
@@ -1030,9 +949,7 @@
       "事業完了時・終了後アンケート回答に同意",
       "事業計画書"
     ],
-    "applicationFrames": [
-      "通常枠"
-    ],
+    "applicationFrames": ["通常枠"],
     "typicalSchedule": "例年5月下旬公募開始～6月下旬締切。令和8年度は5/25～6/26(17時)。採択約600者予定",
     "budgetBasis": "令和8年度当初予算で実施中。賃上げ促進支援パッケージの中核（実施確実・現在公募中）",
     "officialUrl": "https://www.pref.osaka.lg.jp/o110050/keieishien/rieki/riekiritur8.html",
@@ -1057,9 +974,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "国の業務改善助成金（厚労省）に上乗せし、最低賃金引上げに伴う設備投資等を補助",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業・小規模事業者（府内事業場）",
     "subsidyRate": "1/4",
     "subsidyMax": "2000000",
@@ -1068,9 +983,7 @@
       "令和8年度改定予定の大阪府最低賃金よりさらに2%上回る事業場内最賃の引上げ",
       "国助成金の対象経費支出済が前提（逐次申請）"
     ],
-    "applicationFrames": [
-      "通常枠"
-    ],
+    "applicationFrames": ["通常枠"],
     "typicalSchedule": "国の業務改善助成金の募集に連動。令和8年度は時期未定",
     "budgetBasis": "令和8年度賃上げ促進支援パッケージに掲載（実施見込み・国制度の募集時期を踏まえ決定）",
     "officialUrl": "https://www.pref.osaka.lg.jp/o110090/rodokankyo/gyoumukaizen_chinagesokushin_hojokin.html",
@@ -1094,9 +1007,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "展示商談会への出展小間料を補助し販路開拓を支援",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者（みなし大企業を除く・府内に主たる事務所/事業所）",
     "subsidyRate": "2/3",
     "subsidyMax": "2000000",
@@ -1105,9 +1016,7 @@
       "中小企業基本法第2条の中小企業者でみなし大企業でない",
       "対象経費は展示商談会主催者と小間契約を交わした出展小間料金"
     ],
-    "applicationFrames": [
-      "通常枠"
-    ],
+    "applicationFrames": ["通常枠"],
     "typicalSchedule": "例年夏～年末で受付（予算上限到達で終了）。補助下限10万円",
     "budgetBasis": "令和8年度賃上げ促進支援パッケージに掲載。令和8年度実施（よくある問合せPDFを5月時点で公開）",
     "officialUrl": "https://www.pref.osaka.lg.jp/o110070/mono/r8syuttenshien.html",
@@ -1132,9 +1041,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "新分野進出・新事業展開（新商品・新サービス開発、販路開拓等）の経費を補助",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者（府内事業者）",
     "subsidyRate": "1/2以内",
     "subsidyMax": "1500000",
@@ -1142,9 +1049,7 @@
       "新事業展開（新商品・新サービス・新分野進出）の事業計画",
       "府内に事業所"
     ],
-    "applicationFrames": [
-      "通常枠"
-    ],
+    "applicationFrames": ["通常枠"],
     "typicalSchedule": "令和7年度まで例年春～初夏に公募。令和8年度は単独公募が確認できず",
     "budgetBasis": "令和6・7年度は継続実施。令和8年度は単独ページなし。利益率向上・賃上げ支援事業へ集約された可能性が高い",
     "officialUrl": "https://www.pref.osaka.lg.jp/o110050/keieishien/takeoffr7/index.html",
@@ -1168,9 +1073,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "ビジネスプランコンテスト優秀者の創業等に要する経費を補助（創業支援）",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "大阪府内の事業者又は府内で起業予定の者",
     "subsidyRate": "1/2以内",
     "subsidyMax": "1000000",
@@ -1179,10 +1082,7 @@
       "交付決定日から1年以内に創業（未創業者）",
       "補助対象期間は1年間"
     ],
-    "applicationFrames": [
-      "優勝(上限100万円)",
-      "準優勝(上限50万円)"
-    ],
+    "applicationFrames": ["優勝(上限100万円)", "準優勝(上限50万円)"],
     "typicalSchedule": "例年ビジネスプランコンテスト(夏～秋募集・年度末表彰)に連動して補助金交付",
     "budgetBasis": "大阪産業局が府の中小企業支援交付金交付要綱に基づき継続実施（公式ページは令和7年度時点・実施見込み）",
     "officialUrl": "https://www.pref.osaka.lg.jp/o110030/keieishien/start-apper/hojyokin.html",
@@ -1206,9 +1106,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "既存空調機を高効率空調機へ更新する省エネ・脱炭素設備投資を補助",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "府内で工場・事業場を運営する中小事業者",
     "subsidyRate": "1/2",
     "subsidyMax": "5000000",
@@ -1217,9 +1115,7 @@
       "大阪府の脱炭素経営宣言登録制度に基づく脱炭素経営宣言",
       "補助下限額20万円"
     ],
-    "applicationFrames": [
-      "通常枠"
-    ],
+    "applicationFrames": ["通常枠"],
     "typicalSchedule": "例年春～初夏に受付。令和8年度は4/13～6/30(当日消印有効)。予算到達で終了",
     "budgetBasis": "令和8年度当初予算で実施中（予算範囲内・実施確実）",
     "officialUrl": "https://www.pref.osaka.lg.jp/o120020/eneseisaku/sec/r08hojokin-pac.html",
@@ -1243,9 +1139,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "対策計画書に基づく省エネ設備更新・太陽光パネル導入を補助（脱炭素）",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "府内の工場・事業場を運営する中小事業者",
     "subsidyRate": "1/3以内",
     "subsidyMax": "2000000",
@@ -1255,9 +1149,7 @@
       "対象は省エネ設備・太陽光パネル（照明器具・空調機・蓄電池は除外）",
       "エネルギー使用量を年1%以上削減またはCO2排出量を年1t-CO2以上削減"
     ],
-    "applicationFrames": [
-      "通常枠"
-    ],
+    "applicationFrames": ["通常枠"],
     "typicalSchedule": "例年5月下旬～7月下旬で受付。令和8年度は5/20(14時)～7/21(18時)",
     "budgetBasis": "令和8年度当初予算で実施中（公式ページ2026年5月20日更新・実施確実）",
     "officialUrl": "https://www.pref.osaka.lg.jp/o120020/eneseisaku/sec/plan2_subsidy.html",
@@ -1280,9 +1172,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "生産性向上・DX・カーボンニュートラル型設備投資に係る信用保証料を補助・優遇",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者（府制度融資利用者）",
     "subsidyRate": "信用保証料の1/2補助（保証料補助型）",
     "subsidyMax": "",
@@ -1318,9 +1208,7 @@
     "prefecture": "大阪府",
     "areaSearch": "大阪府",
     "purpose": "創業前・創業後まもない事業者の開業資金を制度融資で支援（女性・若者・シニア等は金利優遇）",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "府内で創業予定・創業後おおむね5年未満の事業者",
     "subsidyRate": "",
     "subsidyMax": "",
@@ -1329,10 +1217,7 @@
       "女性・35歳未満・55歳以上・東京圏からの移住者は金利0.2%引下げ",
       "地域支援ネットワーク型は公的機関の伴走支援付き"
     ],
-    "applicationFrames": [
-      "開業資金（通常型）",
-      "地域支援ネットワーク型"
-    ],
+    "applicationFrames": ["開業資金（通常型）", "地域支援ネットワーク型"],
     "typicalSchedule": "通年（制度融資）",
     "budgetBasis": "府の制度融資として継続実施（実施確実）",
     "officialUrl": "https://www.pref.osaka.lg.jp/o110080/kinyushien/kaigyo-sien/index.html",
@@ -1357,9 +1242,7 @@
     "prefecture": "大阪府",
     "areaSearch": "堺市",
     "purpose": "IoT・AI・ロボット・RPA・ソフトウェア等のデジタル化（DX）設備・委託費を補助",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "堺市に事業所を有する中小企業者（従業員300人以下の社会福祉法人含む）",
     "subsidyRate": "1/2以内",
     "subsidyMax": "1000000",
@@ -1368,9 +1251,7 @@
       "マナビDXのオンライン講座受講が必須",
       "市税滞納なし・過去受給実績なし・国等の同一事業助成と重複なし"
     ],
-    "applicationFrames": [
-      "通常枠"
-    ],
+    "applicationFrames": ["通常枠"],
     "typicalSchedule": "令和8年度は補助金募集5/1～8/31、事前支援相談締切7/17、予算超過時は抽選で審査順を決定",
     "budgetBasis": "令和8年度実施中（堺市予算・募集要領v2公開済み）",
     "officialUrl": "https://www.city.sakai.lg.jp/sangyo/shienyuushi/dx_shien/digitalka.html",
@@ -1394,9 +1275,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "神奈川県",
     "purpose": "生産性向上・業務プロセス改善・人手不足解消に資する設備導入等",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者（県内に事業所を有する者）",
     "subsidyRate": "1/2（小規模事業者は2/3）",
     "subsidyMax": "5000000",
@@ -1407,11 +1286,7 @@
       "電子申請システムの利用",
       "事業計画書"
     ],
-    "applicationFrames": [
-      "一般枠",
-      "グループ化支援枠",
-      "創業者成長支援枠"
-    ],
+    "applicationFrames": ["一般枠", "グループ化支援枠", "創業者成長支援枠"],
     "typicalSchedule": "例年4-5月に公募要領公表、電子申請は5月1日開始。複数回公募（6月公募は5/1-6/30 等）。秋頃まで複数回。",
     "budgetBasis": "令和8年度（FY2026）実施。電子申請は令和8年5月1日オープン、6月公募は6/30締切。予算総額や加点項目（米国関税・日産自動車関連）は公式ポータルで未確認（第三者情報のみ）。",
     "officialUrl": "https://r8seisansei.pref.kanagawa.jp/",
@@ -1436,9 +1311,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "神奈川県",
     "purpose": "M&A・経営権取得後のグループ化による生産性向上・設備投資",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者（県内）",
     "subsidyRate": "1/2（小規模事業者は2/3）",
     "subsidyMax": "40000000",
@@ -1450,9 +1323,7 @@
       "電子申請システムの利用",
       "事業計画書"
     ],
-    "applicationFrames": [
-      "グループ化支援枠"
-    ],
+    "applicationFrames": ["グループ化支援枠"],
     "typicalSchedule": "例年5月1日電子申請開始、複数回公募（6月公募は5/1-6/30 等）。",
     "budgetBasis": "令和8年度（FY2026）実施。生産性向上促進事業費補助金の一枠。",
     "officialUrl": "https://r8seisansei.pref.kanagawa.jp/",
@@ -1476,9 +1347,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "神奈川県",
     "purpose": "創業間もない事業者の生産性向上・業務改善のための設備導入等",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "県内中小企業者・小規模事業者（創業間もない事業者）",
     "subsidyRate": "2/3",
     "subsidyMax": "3000000",
@@ -1489,9 +1358,7 @@
       "電子申請システムの利用",
       "事業計画書"
     ],
-    "applicationFrames": [
-      "創業者成長支援枠"
-    ],
+    "applicationFrames": ["創業者成長支援枠"],
     "typicalSchedule": "電子申請は令和8年5月1日開始～令和8年8月31日17時まで（公式ポータル確認）。",
     "budgetBasis": "令和8年度（FY2026）実施。生産性向上促進事業費補助金の一枠。",
     "officialUrl": "https://r8seisansei.pref.kanagawa.jp/",
@@ -1515,9 +1382,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "神奈川県",
     "purpose": "省エネルギー設備の導入（更新）によるサプライチェーンの脱炭素化",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・学校法人・一般社団法人・医療法人・社会福祉法人等",
     "subsidyRate": "1/3",
     "subsidyMax": "6000000",
@@ -1554,9 +1419,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "神奈川県",
     "purpose": "デジタル技術活用による人手不足解消・業務効率化",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "小規模事業者（商業・サービス業は従業員5人以下、製造業等は20人以下）",
     "subsidyRate": "2/3",
     "subsidyMax": "500000",
@@ -1591,9 +1454,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "神奈川県",
     "purpose": "親族内承継・第三者承継（M&A）の準備・実行に要する費用の補助、経営資源・雇用の喪失防止",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "県内中小企業者",
     "subsidyRate": "1/2（小規模事業者は2/3）",
     "subsidyMax": "1000000",
@@ -1632,9 +1493,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "横浜市",
     "purpose": "省エネ・再エネ設備導入によるエネルギー高騰対策と脱炭素化（カーボンニュートラル実現）",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "市内中小企業者（市内事業所で12か月以上継続）",
     "subsidyRate": "1/2（LED化は機器単価方式、太陽光はkW単価方式）",
     "subsidyMax": "5000000",
@@ -1672,9 +1531,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "川崎市",
     "purpose": "新製品開発後の検査・展示会出展等の販路開拓支援",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "市内に1年以上事業所を有する中小企業者等",
     "subsidyRate": "1/2",
     "subsidyMax": "300000",
@@ -1697,9 +1554,7 @@
     "isLargeAmount": false,
     "isStartup": false,
     "unifiedWith": "",
-    "sources": [
-      "https://www.city.kawasaki.jp/280/page/0000113751.html"
-    ],
+    "sources": ["https://www.city.kawasaki.jp/280/page/0000113751.html"],
     "notes": "上限25万円（特定認定企業30万円）・下限5万円・補助率1/2。補助対象経費10万円未満は対象外。令和8年度は4/1-4/30で募集終了済み（公式ページに【募集終了】明記）。次回は例年通り令和9年4月頃の見込み。"
   },
   {
@@ -1709,9 +1564,7 @@
     "prefecture": "神奈川県",
     "areaSearch": "川崎市",
     "purpose": "再エネ（太陽光等）導入・省エネ型設備更新による脱炭素化",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "市内中小規模事業者",
     "subsidyRate": "再エネ1/3・省エネ設備更新1/4",
     "subsidyMax": "2000000",
@@ -1748,9 +1601,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "原材料・エネルギー価格高騰下で、生産性向上に資する設備導入・改修、会計ソフト導入、税理士との新規顧問契約を支援。賃上げ促進も狙う。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者等",
     "subsidyRate": "2/3（別途定める区域内は3/4）",
     "subsidyMax": "3000000（設備導入。会計ソフト15万円・税理士新規顧問契約20万円を合算可）",
@@ -1790,9 +1641,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "省エネ設備（LED照明・高効率空調等）・再エネ設備（太陽光発電等）の導入を支援し、事業者の脱炭素化とコスト削減を促進。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・福祉施設・医療機関等・農林漁業者",
     "subsidyRate": "中小企業者等2/3、福祉施設・医療機関等3/4",
     "subsidyMax": "6000000（再エネ設備。省エネ設備は上限300万円）",
@@ -1828,9 +1677,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "小規模事業者の販路開拓・生産性向上（県版持続化補助金）および経営革新計画の実行を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "小規模事業者（県内に主たる事業所）",
     "subsidyRate": "経営計画(県版持続化)1/2、経営革新計画2/3",
     "subsidyMax": "1000000（経営革新計画枠。経営計画枠は50万円）",
@@ -1839,10 +1686,7 @@
       "県知事承認の経営革新計画（経営革新計画枠）",
       "事業計画書"
     ],
-    "applicationFrames": [
-      "経営計画（県版持続化補助金）",
-      "経営革新計画"
-    ],
+    "applicationFrames": ["経営計画（県版持続化補助金）", "経営革新計画"],
     "typicalSchedule": "例年5月中旬〜6月下旬。令和8年度は5/18〜6/26。",
     "budgetBasis": "令和8年度（FY2026）に実施。令和8年5月18日〜6月26日で公募(商工会連合会公式で確認)。県＋商工会連合会の継続事業。",
     "officialUrl": "https://www.shokokai-yamanashi.or.jp/yamanashi-innovation/",
@@ -1853,9 +1697,7 @@
     "isLargeAmount": false,
     "isStartup": false,
     "unifiedWith": "",
-    "sources": [
-      "https://www.shokokai-yamanashi.or.jp/yamanashi-innovation/"
-    ],
+    "sources": ["https://www.shokokai-yamanashi.or.jp/yamanashi-innovation/"],
     "notes": "対象経費は機械装置等費・広報費・展示会等出展費・開発費等。経営計画枠は商工会等の支援、経営革新枠は県知事承認の経営革新計画が前提。"
   },
   {
@@ -1865,9 +1707,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "事業場内最低賃金の引上げに取り組む中小・小規模事業者の設備投資・人材育成等を支援し、賃上げの環境整備を後押し。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業者・小規模事業者（県内に事業場）",
     "subsidyRate": "設備投資等経費4/5、社会保険労務士報酬10/10（上限10万円）",
     "subsidyMax": "",
@@ -1904,9 +1744,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "県内中小企業等が実施するDX推進に資する社内研修の費用を補助し、デジタル人材育成を促進。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "中小企業・商店街振興組合・事業協同組合等（県内に本店・製造/研究開発拠点）",
     "subsidyRate": "2/3",
     "subsidyMax": "200000",
@@ -1915,9 +1753,7 @@
       "事業計画",
       "実績報告"
     ],
-    "applicationFrames": [
-      "DX研修実施"
-    ],
+    "applicationFrames": ["DX研修実施"],
     "typicalSchedule": "年度内に研修完了が条件。過去は年度後半〜春先に募集。令和8年度の公募時期は要確認。",
     "budgetBasis": "県のDX人材育成施策として実施実績あり。令和8年度の専用『DX研修実施事業費補助金』としての公募有無・時期は公式で明確に確認できず(要確認)。",
     "officialUrl": "https://www.pref.yamanashi.jp/jouho/dx_training_hojokin.html",
@@ -1941,11 +1777,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "DMO・観光協会・観光事業者による新たな観光コンテンツの造成、新展開、生産性向上の取組を支援。",
-    "targetIndustries": [
-      "観光業",
-      "宿泊業",
-      "旅行業"
-    ],
+    "targetIndustries": ["観光業", "宿泊業", "旅行業"],
     "targetSize": "県内に事業所を有するDMO・観光協会・観光事業者等",
     "subsidyRate": "100万円まで定額、100万円超部分は1/2以内",
     "subsidyMax": "3000000",
@@ -1954,11 +1786,7 @@
       "地域関係者との連携",
       "事業計画（最低事業費200万円）"
     ],
-    "applicationFrames": [
-      "コンテンツ造成型",
-      "新展開型",
-      "生産性向上型"
-    ],
+    "applicationFrames": ["コンテンツ造成型", "新展開型", "生産性向上型"],
     "typicalSchedule": "例年春に短期間で募集。令和8年度は5月前半に募集し終了(申請前支援3/27〜5/8)。",
     "budgetBasis": "令和8年度（FY2026）に実施済み(申請前支援2026/3/27〜5/8、本募集は終了)。県観光部門の継続事業のため令和9年度も同時期に再公募の見込み。",
     "officialUrl": "https://www.pref.yamanashi.jp/kankou-sk/newtourismsupport.html",
@@ -1982,9 +1810,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "山梨県内での起業・創業に係る費用を助成し、地域での新規創業を後押し。地域経済活性化活動やUIJターンも対象。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "県内で起業・創業予定または起業・創業した法人・個人、地方創生に取り組む企業・団体等",
     "subsidyRate": "",
     "subsidyMax": "2000000（起業・創業。地域経済活性化100万円・UIJターン30万円・技術向上50万円等の枠あり）",
@@ -2023,9 +1849,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "県内で起業する者・起業後5年未満の事業者の成長分野での事業立ち上げ資金を助成し、スタートアップを支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "県内に本社（拠点）を設置して起業する者、または起業後5年未満の者",
     "subsidyRate": "",
     "subsidyMax": "",
@@ -2034,9 +1858,7 @@
       "起業または起業後5年未満",
       "事業計画"
     ],
-    "applicationFrames": [
-      "成長分野スタートアップ資金助成"
-    ],
+    "applicationFrames": ["成長分野スタートアップ資金助成"],
     "typicalSchedule": "やまなしみらいファンド枠で募集(採択1件程度)。令和8年度の時期は要確認。",
     "budgetBasis": "やまなし産業支援機構の『やまなしみらいファンド』助成事業として存在(J-Net21・機構で確認)。令和8年度の公募時期・金額・補助率は最新要綱で要確認。",
     "officialUrl": "https://www.yiso.or.jp/",
@@ -2060,10 +1882,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "県内中小・小規模企業の新規性・独自性ある新製品・新技術の研究開発を支援し、事業化を促進。",
-    "targetIndustries": [
-      "製造業",
-      "情報通信業"
-    ],
+    "targetIndustries": ["製造業", "情報通信業"],
     "targetSize": "県内に事業所を有する中小企業・小規模企業またはそのグループ",
     "subsidyRate": "2/3以内",
     "subsidyMax": "1000000",
@@ -2072,9 +1891,7 @@
       "実現可能性・事業化可能性",
       "研究開発計画書"
     ],
-    "applicationFrames": [
-      "新製品・新技術研究開発"
-    ],
+    "applicationFrames": ["新製品・新技術研究開発"],
     "typicalSchedule": "例年6月〜7月末に募集、8月下旬に書類審査。令和8年度は6/3〜7/31必着。",
     "budgetBasis": "令和8年度（FY2026）に実施。令和8年6月3日〜7月31日で公募(機構公式で確認)。機構の継続助成事業。",
     "officialUrl": "https://www.yiso.or.jp/service/promote1/",
@@ -2085,9 +1902,7 @@
     "isLargeAmount": false,
     "isStartup": false,
     "unifiedWith": "",
-    "sources": [
-      "https://www.yiso.or.jp/service/promote1/"
-    ],
+    "sources": ["https://www.yiso.or.jp/service/promote1/"],
     "notes": "上限100万円・助成率2/3以内。対象経費は謝金・原材料費・機械装置/工具器具費・委託費等。採択件数が少なく競争性は高め。"
   },
   {
@@ -2097,9 +1912,7 @@
     "prefecture": "山梨県",
     "areaSearch": "山梨県",
     "purpose": "県内中小企業の円滑な事業承継（企業価値簡易算定、引継ぎマニュアル作成、M&A仲介委託等）に要する経費を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "県内に本社を有する中小企業者",
     "subsidyRate": "2/3以内",
     "subsidyMax": "500000",
@@ -2107,9 +1920,7 @@
       "申請前に山梨県事業承継・引継ぎ支援センターへ相談申込み",
       "事業計画"
     ],
-    "applicationFrames": [
-      "事業承継促進"
-    ],
+    "applicationFrames": ["事業承継促進"],
     "typicalSchedule": "令和5年度で受付終了。",
     "budgetBasis": "公式ページに『令和5年度で受付終了しました』と明記(県公式で確認)。令和8年度（FY2026）の県単独事業としての実施はなし。国の事業承継・M&A補助金が代替の中心。",
     "officialUrl": "https://www.pref.yamanashi.jp/startup/hojokin/syokei.html",
@@ -2120,9 +1931,7 @@
     "isLargeAmount": false,
     "isStartup": false,
     "unifiedWith": "",
-    "sources": [
-      "https://www.pref.yamanashi.jp/startup/hojokin/syokei.html"
-    ],
+    "sources": ["https://www.pref.yamanashi.jp/startup/hojokin/syokei.html"],
     "notes": "県制度は終了確定。事業承継は国の事業承継・M&A補助金や甲府市の市制度を案内するのが実務的。"
   },
   {
@@ -2132,11 +1941,7 @@
     "prefecture": "山梨県",
     "areaSearch": "甲府市",
     "purpose": "中心市街地の空き店舗解消と商業活性化のため、新規出店者の店舗改修費・賃借料の一部を助成。",
-    "targetIndustries": [
-      "小売業",
-      "飲食業",
-      "サービス業"
-    ],
+    "targetIndustries": ["小売業", "飲食業", "サービス業"],
     "targetSize": "中心市街地の空き店舗へ新規出店する個人・団体等",
     "subsidyRate": "2/3以内",
     "subsidyMax": "720000（店舗賃借料。内装・設備工事費は上限625,000円、月額賃借料上限6万円）",
@@ -2146,10 +1951,7 @@
       "市税滞納がないこと",
       "事業計画"
     ],
-    "applicationFrames": [
-      "内装・設備工事費",
-      "店舗賃借料"
-    ],
+    "applicationFrames": ["内装・設備工事費", "店舗賃借料"],
     "typicalSchedule": "例年4月〜翌年2月の通年受付（予算到達で終了）。令和8年度は4/1〜令和9年2/29。",
     "budgetBasis": "令和8年度（FY2026）に実施(補助金ポータルR8年度版・市公式で確認)。市の中心市街地活性化施策として継続。予算到達で受付終了の運用。",
     "officialUrl": "https://www.city.kofu.yamanashi.jp/shoko/akitenpo.html",
@@ -2173,9 +1975,7 @@
     "prefecture": "山梨県",
     "areaSearch": "甲府市",
     "purpose": "市内中小企業の事業承継促進のため、資産査定・企業価値の簡易算定・引継ぎマニュアル作成・M&A仲介委託等に係る費用を補助。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "県内に本社を持ち市内に主たる事業所がある中小企業等",
     "subsidyRate": "1/3",
     "subsidyMax": "100000",
@@ -2184,9 +1984,7 @@
       "市税滞納がないこと",
       "風俗営業でないこと"
     ],
-    "applicationFrames": [
-      "事業承継"
-    ],
+    "applicationFrames": ["事業承継"],
     "typicalSchedule": "市単独で実施（令和8年度の公募時期は商工課へ要確認）。",
     "budgetBasis": "甲府市が県制度終了を補完する市単独補助金として実施(市公式ページ実在を確認)。令和8年度の具体の公募時期・予算はページに明示なく要確認。",
     "officialUrl": "https://www.city.kofu.yamanashi.jp/shoko/business/jigyoukeisyouhojo.html",
@@ -2209,9 +2007,7 @@
     "prefecture": "山梨県",
     "areaSearch": "北杜市",
     "purpose": "北杜市内での創業を促進するため、創業者の事業拠点整備・広告宣伝費、空き店舗活用、融資利子・保証料を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "申請時に創業から1年未満で市内に住所または事業所を置く者",
     "subsidyRate": "1/2以内（創業等空き店舗は10/10、融資保証料は10/10）",
     "subsidyMax": "1600000（地域密着型創業者等支援。創業者等支援は80万円、空き店舗は100万円）",
@@ -2251,9 +2047,7 @@
     "prefecture": "山梨県",
     "areaSearch": "甲斐市",
     "purpose": "市内小規模企業者の持続的発展と地域経済活性化のため、経営力向上に資する事業（販路開拓等）を支援。",
-    "targetIndustries": [
-      "全業種"
-    ],
+    "targetIndustries": ["全業種"],
     "targetSize": "市内に事業所を有する小規模企業者",
     "subsidyRate": "1/2以内",
     "subsidyMax": "500000",
@@ -2262,9 +2056,7 @@
       "経営力向上に繋がる事業",
       "事業計画"
     ],
-    "applicationFrames": [
-      "小規模企業者持続化"
-    ],
+    "applicationFrames": ["小規模企業者持続化"],
     "typicalSchedule": "例年6〜7月に募集。令和8年度版が令和8年6月に公開済み。",
     "budgetBasis": "令和8年度（FY2026）に実施。令和8年6月に募集情報が公開(令和8年度版を確認)。市単独の小規模事業者支援として継続。",
     "officialUrl": "https://www.city.kai.yamanashi.jp/soshikinogoannai/sangyo/sangyosouzou/3/8163.html",

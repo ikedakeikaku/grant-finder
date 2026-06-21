@@ -1,10 +1,8 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildAppUrl, safeHttpUrl, safeRelativePath } from "./url";
 
-const originalAppBaseUrl = process.env.APP_BASE_URL;
-
 afterEach(() => {
-  process.env.APP_BASE_URL = originalAppBaseUrl;
+  vi.unstubAllEnvs();
 });
 
 describe("safeHttpUrl", () => {
@@ -28,7 +26,13 @@ describe("safeRelativePath", () => {
 
 describe("buildAppUrl", () => {
   it("APP_BASE_URL と安全なパスからURLを作る", () => {
-    process.env.APP_BASE_URL = "https://app.example.com/";
+    vi.stubEnv("APP_BASE_URL", "https://app.example.com/");
     expect(buildAppUrl("/dashboard")).toBe("https://app.example.com/dashboard");
+  });
+
+  it("production では APP_BASE_URL に https を要求する", () => {
+    vi.stubEnv("APP_BASE_URL", "http://app.example.com");
+    vi.stubEnv("NODE_ENV", "production");
+    expect(() => buildAppUrl("/dashboard")).toThrow("APP_BASE_URL");
   });
 });
