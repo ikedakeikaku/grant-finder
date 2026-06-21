@@ -24,7 +24,7 @@
 - `supabase/migrations/` … スキーマ＋RLS（SQL）
 - `docs/` … 設計の詳細
 
-## データ品質の注意（詳細はメモリ参照）
+## データ品質の注意
 
 - jGrantsの`acceptance_end`は主要な複数回次制度では実際の申請締切と不一致 → `curated.ts`で上書き。
 - 大きいテーブル(subsidy_schedules等)は PostgREST の1000行上限に注意し`.range()`で全件取得。
@@ -35,7 +35,7 @@
 - `cookies()` `headers()` `params` `searchParams` は **async**。必ず `await`。
 - Middleware は **`proxy`** にリネーム（`src/proxy.ts`、`export function proxy`、runtimeはnodejs固定）。
 - `next lint` は廃止。`eslint` を直接実行（設定済み）。
-- Route Handler の cron 保護は `Authorization: Bearer ${CRON_SECRET}` を検証。
+- 定期処理は GitHub Actions から `scripts/` を実行する。Actions の権限は最小化する。
 
 ## 規約
 

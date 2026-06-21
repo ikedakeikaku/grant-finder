@@ -1,5 +1,8 @@
 name: research-catalog
 
+permissions:
+  contents: read
+
 # 制度マスタの予算動向・公募日程を Web 調査で継続更新する（週次・低頻度）。
 # 1回あたり既定8件ずつ古いものから更新し、数週で全制度を巡回する。
 # Secrets: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY
