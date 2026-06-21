@@ -1,7 +1,19 @@
-import { differenceInCalendarDays } from "date-fns";
 import type { NotificationType } from "../core/notify-plan";
 import { safeHttpUrl } from "../url";
 import { formatSubsidyMax } from "../catalog/programs";
+
+/**
+ * JST（日本時間）の暦日で「締切まで残り何日」を計算する。
+ * date-fns の differenceInCalendarDays は実行環境のローカルTZ依存のため、
+ * UTCで動くサーバー（GitHub Actions/Vercel）だと JST 表示の締切と1日ズレる。
+ * 締切表示は JST なので、残日数も JST 基準に統一する。
+ */
+const DAY_MS = 86_400_000;
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+function jstCalendarDaysBetween(end: Date, now: Date): number {
+  const jstDay = (d: Date) => Math.floor((d.getTime() + JST_OFFSET_MS) / DAY_MS);
+  return jstDay(end) - jstDay(now);
+}
 
 /**
  * 通知メールの本文生成（純粋関数）。送信手段(mailer)とは分離してテスト可能にする。
@@ -71,7 +83,7 @@ export function renderNotificationEmail(
   lines.push("");
 
   if (input.acceptanceEnd) {
-    const daysLeft = differenceInCalendarDays(input.acceptanceEnd, input.now);
+    const daysLeft = jstCalendarDaysBetween(input.acceptanceEnd, input.now);
     lines.push(`▼締切：${formatJst(input.acceptanceEnd)}`);
     if (daysLeft >= 0) lines.push(`（残り約${daysLeft}日）`);
   }
