@@ -205,21 +205,27 @@ export async function buildProposal(
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: userContent },
   ];
+  // web_search_20260209 は内部でコード実行を使うため pause_turn 継続時に container を引き継ぐ。
+  let containerId: string | undefined;
 
   for (let i = 0; i < MAX_CONTINUATIONS; i++) {
-    const res = await client.messages.create({
-      model: MODEL,
-      max_tokens: 8000,
-      temperature: 0,
-      system: SYSTEM,
-      // light モードは submit を強制（1往復）。deep は検索→submit を自走させる。
-      tool_choice:
-        options.mode === "light"
-          ? { type: "tool", name: "submit_proposal" }
-          : { type: "auto" },
-      tools,
-      messages,
-    });
+    // Web検索/大きめ出力で長時間化しうるため streaming（HTTPタイムアウト回避）。
+    const res = await client.messages
+      .stream({
+        model: MODEL,
+        max_tokens: 16000,
+        temperature: 0,
+        system: SYSTEM,
+        // light モードは submit を強制（1往復）。deep は検索→submit を自走させる。
+        tool_choice:
+          options.mode === "light"
+            ? { type: "tool", name: "submit_proposal" }
+            : { type: "auto" },
+        tools,
+        messages,
+        ...(containerId ? { container: containerId } : {}),
+      })
+      .finalMessage();
 
     const submit = res.content.find(
       (b) => b.type === "tool_use" && b.name === "submit_proposal",
@@ -231,6 +237,7 @@ export async function buildProposal(
     // server-tool(web_search) がサーバー側ループ上限に達した → 継続。
     if (res.stop_reason === "pause_turn") {
       messages.push({ role: "assistant", content: res.content });
+      containerId = res.container?.id ?? containerId;
       continue;
     }
     // それ以外（end_turn 等）で submit が無ければ打ち切り。

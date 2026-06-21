@@ -3,6 +3,8 @@ import { differenceInCalendarDays } from "date-fns";
 import { createSupabaseAdminClient } from "../src/lib/supabase/admin";
 import {
   isProgramInArea,
+  fromResearchRecord,
+  toProgramRow,
   type ProgramLevel,
 } from "../src/lib/catalog/programs";
 import {
@@ -11,6 +13,10 @@ import {
   type ProposalCandidate,
   type ProposerProfile,
 } from "../src/lib/matching/proposer";
+import {
+  discoverPrograms,
+  isDiscoveryEnabled,
+} from "../src/lib/catalog/discover";
 import { safeHttpUrl } from "../src/lib/url";
 
 /**
@@ -135,6 +141,46 @@ function candidateScore(b: BusinessRow, p: ProgramRow): number {
   return score;
 }
 
+/** 関心駆動の制度発掘（deepのみ）。未収録の制度をWeb調査→programsへ永続化し、ProgramRow[]で返す。 */
+async function discoverForBusiness(
+  admin: SupabaseAdmin,
+  profile: ProposerProfile,
+  existing: ProgramRow[],
+  now: Date,
+): Promise<ProgramRow[]> {
+  if (!isDiscoveryEnabled()) return [];
+  const names = existing.map((p) => p.name);
+  const slugs = existing.map((p) => p.id.replace(/^prog:/, ""));
+  let discovered: Awaited<ReturnType<typeof discoverPrograms>> = [];
+  try {
+    discovered = await discoverPrograms(profile, names, slugs, { max: 6 });
+  } catch (e) {
+    console.error(
+      "[build-proposals] 発掘に失敗(スキップ):",
+      e instanceof Error ? e.message : e,
+    );
+    return [];
+  }
+  if (discovered.length === 0) return [];
+
+  const rows = discovered.map((raw) => ({
+    ...toProgramRow(fromResearchRecord(raw)),
+    source: "discovered",
+    researched_at: now.toISOString(),
+  }));
+  const { error } = await admin
+    .from("programs")
+    .upsert(rows, { onConflict: "id" });
+  if (error) {
+    console.error("[build-proposals] 発掘制度の保存に失敗:", error.message);
+    return [];
+  }
+  console.log(
+    `[build-proposals] 発掘: ${rows.length}件をカタログに追加（${discovered.map((d) => d.name).join(" / ")}）`,
+  );
+  return rows as unknown as ProgramRow[];
+}
+
 function decideMode(b: BusinessRow, now: Date): "deep" | "light" | "skip" {
   if (b.proposal_status === "pending" || !b.proposal_refreshed_at)
     return "deep";
@@ -162,8 +208,15 @@ async function processBusiness(
     plannedInvestment: b.planned_investment,
   };
 
+  // deep のみ：関心駆動で未収録の制度を発掘してカタログに追加し、候補に含める。
+  let allPrograms = programs;
+  if (mode === "deep") {
+    const discovered = await discoverForBusiness(admin, profile, programs, now);
+    if (discovered.length > 0) allPrograms = [...programs, ...discovered];
+  }
+
   // 所在地で粗くフィルタ（国＋自県＋全国）。
-  const inArea = programs.filter((p) =>
+  const inArea = allPrograms.filter((p) =>
     isProgramInArea(
       {
         areaSearch: p.area_search ?? "",
