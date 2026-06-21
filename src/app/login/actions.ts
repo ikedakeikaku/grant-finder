@@ -2,6 +2,8 @@
 
 import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { buildAppUrl } from "@/lib/url";
+import { parseLoginForm } from "@/lib/validation";
 
 export interface LoginState {
   error?: string;
@@ -16,17 +18,16 @@ export async function sendMagicLink(
   _prev: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
-  const email = String(formData.get("email") ?? "").trim();
-  if (!email) return { error: "メールアドレスを入力してください" };
+  const parsed = parseLoginForm(formData);
+  if (!parsed.success) return { error: "メールアドレスの形式が不正です" };
 
   const supabase = await createSupabaseServerClient();
   const hdrs = await headers();
-  const origin =
-    hdrs.get("origin") ?? process.env.APP_BASE_URL ?? "http://localhost:3000";
+  const redirectTo = buildAppUrl("/auth/callback", hdrs.get("origin"));
 
   const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: `${origin}/auth/callback` },
+    email: parsed.data.email,
+    options: { emailRedirectTo: redirectTo },
   });
   if (error) return { error: error.message };
   return { sent: true };

@@ -25,6 +25,7 @@ export type NotificationType =
   | "new_match"
   | "opened"
   | "pre_announce"
+  | "proposal_digest"
   | DeadlineNotificationType;
 
 export interface MatchNotifyState {
