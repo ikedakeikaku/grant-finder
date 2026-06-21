@@ -128,16 +128,22 @@ async function research(
     type: "web_search_20260209",
     name: "web_search",
   };
+  // web_search_20260209 は内部でコード実行を使うため pause_turn 継続時に container を引き継ぐ。
+  let containerId: string | undefined;
   for (let i = 0; i < MAX_CONTINUATIONS; i++) {
-    const res = await client.messages.create({
-      model: MODEL,
-      max_tokens: 4000,
-      temperature: 0,
-      system: SYSTEM,
-      tool_choice: { type: "auto" },
-      tools: [webSearch, SUBMIT_TOOL],
-      messages,
-    });
+    // Web検索で長時間化しうるため streaming（HTTPタイムアウト回避）。
+    const res = await client.messages
+      .stream({
+        model: MODEL,
+        max_tokens: 8000,
+        temperature: 0,
+        system: SYSTEM,
+        tool_choice: { type: "auto" },
+        tools: [webSearch, SUBMIT_TOOL],
+        messages,
+        ...(containerId ? { container: containerId } : {}),
+      })
+      .finalMessage();
     const submit = res.content.find(
       (b) => b.type === "tool_use" && b.name === "submit_research",
     );
@@ -146,6 +152,7 @@ async function research(
     }
     if (res.stop_reason === "pause_turn") {
       messages.push({ role: "assistant", content: res.content });
+      containerId = res.container?.id ?? containerId;
       continue;
     }
     break;
