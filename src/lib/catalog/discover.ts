@@ -51,10 +51,19 @@ const SUBMIT_TOOL = {
         items: {
           type: "object",
           properties: {
-            slug: { type: "string", description: "英小文字/ハイフンの安定識別子(既存と重複しない)" },
+            slug: {
+              type: "string",
+              description: "英小文字/ハイフンの安定識別子(既存と重複しない)",
+            },
             name: { type: "string" },
-            level: { type: "string", description: "national | prefecture | municipal" },
-            prefecture: { type: "string", description: "自治体制度の都道府県。国は空文字" },
+            level: {
+              type: "string",
+              description: "national | prefecture | municipal",
+            },
+            prefecture: {
+              type: "string",
+              description: "自治体制度の都道府県。国は空文字",
+            },
             areaSearch: { type: "string", description: "全国 / 東京都 等" },
             purpose: { type: "string" },
             targetIndustries: { type: "array", items: { type: "string" } },
@@ -77,11 +86,30 @@ const SUBMIT_TOOL = {
             notes: { type: "string" },
           },
           required: [
-            "slug", "name", "level", "prefecture", "areaSearch", "purpose",
-            "targetIndustries", "targetSize", "subsidyRate", "subsidyMax",
-            "keyRequirements", "applicationFrames", "typicalSchedule", "budgetBasis",
-            "officialUrl", "scheduleKey", "status", "nextOpen", "confidence",
-            "isLargeAmount", "isStartup", "unifiedWith", "sources", "notes",
+            "slug",
+            "name",
+            "level",
+            "prefecture",
+            "areaSearch",
+            "purpose",
+            "targetIndustries",
+            "targetSize",
+            "subsidyRate",
+            "subsidyMax",
+            "keyRequirements",
+            "applicationFrames",
+            "typicalSchedule",
+            "budgetBasis",
+            "officialUrl",
+            "scheduleKey",
+            "status",
+            "nextOpen",
+            "confidence",
+            "isLargeAmount",
+            "isStartup",
+            "unifiedWith",
+            "sources",
+            "notes",
           ],
         },
       },
@@ -109,7 +137,9 @@ function str(v: unknown): string {
   return typeof v === "string" ? v : "";
 }
 function strArr(v: unknown): string[] {
-  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+  return Array.isArray(v)
+    ? v.filter((x): x is string => typeof x === "string")
+    : [];
 }
 
 /** LLM出力を RawProgram[] に整形（既存と重複するものは除外）。 */
@@ -128,7 +158,8 @@ function normalize(
     const slug = str(o.slug).trim();
     const name = str(o.name).trim();
     if (!slug || !name) continue;
-    if (existingSlugs.has(slug) || existingNames.has(name) || seen.has(slug)) continue;
+    if (existingSlugs.has(slug) || existingNames.has(name) || seen.has(slug))
+      continue;
     seen.add(slug);
     out.push({
       slug,

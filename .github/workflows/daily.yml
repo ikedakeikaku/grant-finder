@@ -1,5 +1,8 @@
 name: daily-pipeline
 
+permissions:
+  contents: read
+
 # 日次パイプライン: jGrants取込 → マッチ生成 → 通知作成/送信。手動実行も可。
 # Secrets: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY
 # Variables(任意): JGRANTS_API_BASE_URL, JGRANTS_INGEST_KEYWORDS, NOTIFY_FROM_EMAIL, APP_BASE_URL

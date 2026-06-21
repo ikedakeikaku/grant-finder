@@ -126,7 +126,8 @@ async function persist(
     .eq("kind", "catalog");
   if (keep.length > 0) del = del.not("program_id", "in", `(${keep.join(",")})`);
   const { error: delErr } = await del;
-  if (delErr) throw new Error(`古い catalog matches 削除失敗: ${delErr.message}`);
+  if (delErr)
+    throw new Error(`古い catalog matches 削除失敗: ${delErr.message}`);
 
   // 5) 事業者を ready に。
   const { error: bErr } = await admin
@@ -174,7 +175,9 @@ async function main(): Promise<void> {
       );
     }
   }
-  console.log(`[import-research] ${ok}/${results.length}件 反映、提案 ${total}件`);
+  console.log(
+    `[import-research] ${ok}/${results.length}件 反映、提案 ${total}件`,
+  );
 }
 
 main().catch((err) => {

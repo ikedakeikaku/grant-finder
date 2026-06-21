@@ -11,7 +11,8 @@ import { formatSubsidyMax } from "../catalog/programs";
 const DAY_MS = 86_400_000;
 const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
 function jstCalendarDaysBetween(end: Date, now: Date): number {
-  const jstDay = (d: Date) => Math.floor((d.getTime() + JST_OFFSET_MS) / DAY_MS);
+  const jstDay = (d: Date) =>
+    Math.floor((d.getTime() + JST_OFFSET_MS) / DAY_MS);
   return jstDay(end) - jstDay(now);
 }
 

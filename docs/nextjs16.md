@@ -37,19 +37,10 @@ Client Component では `use(params)`（React の `use` フック）で解決す
 - 関数内で必ず認証確認（`supabase.auth.getUser()`）。
 - 戻り値は serialize 可能な値のみ（生の DB レコードを返さない）。
 
-## Route Handlers（cron バッチ）
+## Route Handlers
 
 - `POST` 等の変更系は常に動的。`GET` が `cookies()/headers()` を使うと動的化。
-- cron 保護:
-  ```ts
-  export const maxDuration = 60; // Vercel
-  export async function POST(req: Request) {
-    const token = req.headers.get("authorization")?.replace("Bearer ", "");
-    if (token !== process.env.CRON_SECRET)
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    // ...batch
-  }
-  ```
+- このプロジェクトの定期処理は GitHub Actions から `scripts/` を実行する。
 
 ## fetch / キャッシュ
 

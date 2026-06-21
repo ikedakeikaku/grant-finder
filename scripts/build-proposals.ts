@@ -368,7 +368,9 @@ async function main(): Promise<void> {
         .update({ proposal_status: "needs_research" })
         .eq("id", b.id);
       if (qErr) {
-        console.error(`[build-proposals] 調査待ち登録失敗 ${b.id}: ${qErr.message}`);
+        console.error(
+          `[build-proposals] 調査待ち登録失敗 ${b.id}: ${qErr.message}`,
+        );
         continue;
       }
       queued.push(b.id);

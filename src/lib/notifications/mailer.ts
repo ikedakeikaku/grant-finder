@@ -26,7 +26,9 @@ export interface EmailSender {
 /** RESEND_API_KEY 未設定時のフォールバック。送信せずログのみ。 */
 export class DryRunEmailSender implements EmailSender {
   async send(message: EmailMessage): Promise<EmailSendResult> {
-    console.log(`[mailer:dry-run] to=${message.to} subject=${message.subject}`);
+    console.log(
+      `[mailer:dry-run] to=${maskEmailForLog(message.to)} subject=${message.subject}`,
+    );
     return { ok: true, dryRun: true };
   }
 }
@@ -58,13 +60,13 @@ export class ResendEmailSender implements EmailSender {
         const body = await res.text().catch(() => "");
         return {
           ok: false,
-          error: `resend ${res.status}: ${body.slice(0, 300)}`,
+          error: `resend ${res.status}: ${maskEmailForLog(body).slice(0, 300)}`,
         };
       }
       const data = (await res.json()) as { id?: string };
       return { ok: true, id: data.id };
     } catch (err) {
-      return { ok: false, error: (err as Error).message };
+      return { ok: false, error: maskEmailForLog((err as Error).message) };
     }
   }
 }
@@ -72,9 +74,20 @@ export class ResendEmailSender implements EmailSender {
 /** 環境変数に応じて適切な EmailSender を返すファクトリ。 */
 export function createEmailSender(): EmailSender {
   const apiKey = process.env.RESEND_API_KEY;
-  const from =
-    process.env.NOTIFY_FROM_EMAIL ??
-    "補助金ファインダー <notify@notify.ikedakeikaku.jp>";
   if (!apiKey) return new DryRunEmailSender();
+  const from = process.env.NOTIFY_FROM_EMAIL?.trim();
+  if (!from) {
+    throw new Error(
+      "RESEND_API_KEY を設定する場合は NOTIFY_FROM_EMAIL も設定してください",
+    );
+  }
   return new ResendEmailSender(apiKey, from);
+}
+
+export function maskEmailForLog(value: string): string {
+  return value.replace(
+    /([A-Z0-9._%+-])([A-Z0-9._%+-]*)(@[A-Z0-9.-]+\.[A-Z]{2,})/gi,
+    (_match, first: string, _rest: string, domain: string) =>
+      `${first}***${domain}`,
+  );
 }

@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# grant-finder
 
-## Getting Started
+補助金・助成金の候補を事業者プロフィールに合わせて整理し、期限や公募見込みを通知する Next.js アプリです。jGrants の公開API、制度マスタ、予算動向、例年スケジュールを組み合わせて提案を作ります。
 
-First, run the development server:
+## Stack
+
+- Next.js 16 / React 19 / TypeScript strict
+- Supabase Auth + Postgres + RLS
+- Vitest / ESLint / Prettier
+- GitHub Actions cron
+- Resend API によるメール送信
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local` は Git 管理外です。実鍵や個人のメールアドレスはコミットしないでください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Security Notes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` はブラウザへ公開される前提の anon key です。アクセス制御は Supabase RLS で行います。
+- `SUPABASE_SERVICE_ROLE_KEY`、`ANTHROPIC_API_KEY`、`RESEND_API_KEY` はサーバー/Actions 専用です。
+- `NOTIFY_FROM_EMAIL` は実送信時のみ設定してください。公開サンプルには実ドメインのメールアドレスを置きません。
+- ユーザーの通知先メールアドレスはアプリDBに保存される個人情報です。ログや公開Issueへ貼らない運用にしてください。
+- リード確認は Supabase の `private.leads` ビューを使います。通常ユーザーには公開しません。
+- 本番 `APP_BASE_URL` は `https://...` を設定してください。
 
-## Learn More
+## Leads
 
-To learn more about Next.js, take a look at the following resources:
+Supabase SQL Editor で次のように確認します。`private` schema は API の exposed schemas に追加しないでください。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sql
+select *
+from private.leads
+order by signed_up_at desc;
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Checks
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm format:check
+pnpm audit --prod
+pnpm build
+```
