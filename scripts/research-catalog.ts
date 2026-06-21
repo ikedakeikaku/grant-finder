@@ -48,23 +48,40 @@ const SUBMIT_TOOL = {
     properties: {
       budgetBasis: {
         type: "string",
-        description: "令和8年度の予算状況（概算要求/補正/当初/実施有無）を簡潔に",
+        description:
+          "令和8年度の予算状況（概算要求/補正/当初/実施有無）を簡潔に",
       },
-      typicalSchedule: { type: "string", description: "例年の公募開始・締切の傾向" },
+      typicalSchedule: {
+        type: "string",
+        description: "例年の公募開始・締切の傾向",
+      },
       nextOpenFrom: {
         type: "string",
         description: "次回公募開始見込み(YYYY-MM-DD)。不明は空文字",
       },
-      nextOpenTo: { type: "string", description: "公募開始ウィンドウ終端(YYYY-MM-DD)。不明は空文字" },
-      status: { type: "string", description: "active(実施確実/公募中) | watch(実施見込み) | ended" },
+      nextOpenTo: {
+        type: "string",
+        description: "公募開始ウィンドウ終端(YYYY-MM-DD)。不明は空文字",
+      },
+      status: {
+        type: "string",
+        description: "active(実施確実/公募中) | watch(実施見込み) | ended",
+      },
       confidence: { type: "number", description: "確度 0..1" },
       officialUrl: { type: "string", description: "公式サイトURL" },
-      sources: { type: "array", items: { type: "string" }, description: "出典URL" },
+      sources: {
+        type: "array",
+        items: { type: "string" },
+        description: "出典URL",
+      },
       signalKind: {
         type: "string",
         description: "予算シグナル: gaisan_youkyuu | hosei | tousho | none",
       },
-      signalNote: { type: "string", description: "予算シグナルの要点（無ければ空）" },
+      signalNote: {
+        type: "string",
+        description: "予算シグナルの要点（無ければ空）",
+      },
     },
     required: [
       "budgetBasis",
@@ -144,7 +161,9 @@ function normalizeResearch(input: unknown): ResearchResult {
       ? (o[k] as unknown[]).filter((x): x is string => typeof x === "string")
       : [];
   const conf =
-    typeof o.confidence === "number" ? Math.max(0, Math.min(1, o.confidence)) : 0;
+    typeof o.confidence === "number"
+      ? Math.max(0, Math.min(1, o.confidence))
+      : 0;
   return {
     budgetBasis: str("budgetBasis"),
     typicalSchedule: str("typicalSchedule"),
@@ -241,7 +260,9 @@ async function main(): Promise<void> {
         });
         if (!sErr) signals++;
       }
-      console.log(`[research-catalog] ${p.name}: 更新 (status=${patch.status})`);
+      console.log(
+        `[research-catalog] ${p.name}: 更新 (status=${patch.status})`,
+      );
     } catch (e) {
       console.error(
         `[research-catalog] ${p.name}: 失敗`,

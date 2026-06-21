@@ -99,7 +99,9 @@ describe("toProgramRow", () => {
 
 describe("decodeEntities", () => {
   it("HTMLエンティティを戻す", () => {
-    expect(decodeEntities("事業承継・M&amp;A補助金")).toBe("事業承継・M&A補助金");
+    expect(decodeEntities("事業承継・M&amp;A補助金")).toBe(
+      "事業承継・M&A補助金",
+    );
     expect(decodeEntities("&lt;x&gt;&quot;a&quot;")).toBe('<x>"a"');
   });
 });

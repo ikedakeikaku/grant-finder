@@ -42,7 +42,10 @@ export function safeRelativePath(
 
 export function getAppBaseUrl(fallback?: string | null): string {
   const configured = safeHttpUrl(process.env.APP_BASE_URL);
-  if (configured) return stripTrailingSlash(configured);
+  if (configured) {
+    assertProductionHttps(configured);
+    return stripTrailingSlash(configured);
+  }
 
   if (process.env.NODE_ENV === "production") {
     throw new Error(
@@ -65,4 +68,13 @@ export function buildAppUrl(
 
 function stripTrailingSlash(url: string): string {
   return url.endsWith("/") ? url.slice(0, -1) : url;
+}
+
+function assertProductionHttps(url: string): void {
+  if (process.env.NODE_ENV !== "production") return;
+  if (new URL(url).protocol !== "https:") {
+    throw new Error(
+      "APP_BASE_URL には https://... の本番URLを設定してください",
+    );
+  }
 }

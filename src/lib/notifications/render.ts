@@ -173,6 +173,7 @@ export function renderProposalDigestEmail(
   }
   lines.push("");
   input.items.forEach((it, i) => {
+    const officialUrl = safeHttpUrl(it.officialUrl);
     lines.push(`━━ ${i + 1}. ${it.name} ${tags(it)}`.trim());
     const money = [formatSubsidyMax(it.subsidyMax)];
     if (it.subsidyRate) money.push(`補助率 ${it.subsidyRate}`);
@@ -182,7 +183,7 @@ export function renderProposalDigestEmail(
     if (it.usability) lines.push(`　▷ 使えるか：${it.usability}`);
     if (it.prepare.length > 0)
       lines.push(`　▷ ご準備：${it.prepare.join("、")}`);
-    if (it.officialUrl) lines.push(`　▷ 公式：${it.officialUrl}`);
+    if (officialUrl) lines.push(`　▷ 公式：${officialUrl}`);
     lines.push("");
   });
   lines.push("──────────");
@@ -204,11 +205,17 @@ export function renderProposalDigestEmail(
       if (it.subsidyRate) money.push(`補助率 ${escapeHtml(it.subsidyRate)}`);
       const rows: string[] = [];
       if (it.scheduleNote)
-        rows.push(`<li><strong>時期：</strong>${escapeHtml(it.scheduleNote)}</li>`);
+        rows.push(
+          `<li><strong>時期：</strong>${escapeHtml(it.scheduleNote)}</li>`,
+        );
       if (it.fitReason)
-        rows.push(`<li><strong>合う理由：</strong>${escapeHtml(it.fitReason)}</li>`);
+        rows.push(
+          `<li><strong>合う理由：</strong>${escapeHtml(it.fitReason)}</li>`,
+        );
       if (it.usability)
-        rows.push(`<li><strong>使えるか：</strong>${escapeHtml(it.usability)}</li>`);
+        rows.push(
+          `<li><strong>使えるか：</strong>${escapeHtml(it.usability)}</li>`,
+        );
       if (it.prepare.length > 0)
         rows.push(
           `<li><strong>ご準備：</strong>${escapeHtml(it.prepare.join("、"))}</li>`,

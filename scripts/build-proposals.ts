@@ -1,13 +1,17 @@
 import "./load-env";
 import { differenceInCalendarDays } from "date-fns";
 import { createSupabaseAdminClient } from "../src/lib/supabase/admin";
-import { isProgramInArea } from "../src/lib/catalog/programs";
+import {
+  isProgramInArea,
+  type ProgramLevel,
+} from "../src/lib/catalog/programs";
 import {
   buildProposal,
   isProposerEnabled,
   type ProposalCandidate,
   type ProposerProfile,
 } from "../src/lib/matching/proposer";
+import { safeHttpUrl } from "../src/lib/url";
 
 /**
  * 提案書生成バッチ。提案エンジン(proposer)で事業者ごとに「使える根拠つき」の
@@ -23,6 +27,8 @@ type SupabaseAdmin = ReturnType<typeof createSupabaseAdminClient>;
 
 /** 提案で扱う上限件数。 */
 const MAX_ITEMS = 10;
+/** LLM に渡す候補の上限。 */
+const CANDIDATE_POOL = 80;
 /** 再生成の鮮度（日）。 */
 const STALE_DAYS = 30;
 
@@ -93,12 +99,45 @@ function toCandidate(p: ProgramRow): ProposalCandidate {
     nextOpen: p.next_open_from,
     isLargeAmount: p.is_large_amount,
     isStartup: p.is_startup,
-    officialUrl: p.official_url,
+    officialUrl: safeHttpUrl(p.official_url),
   };
 }
 
+function candidateScore(b: BusinessRow, p: ProgramRow): number {
+  const haystack = [
+    p.name,
+    p.purpose,
+    p.target_size,
+    p.budget_basis,
+    ...(p.target_industries ?? []),
+    ...(p.key_requirements ?? []),
+    ...(p.application_frames ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  let score = 0;
+  for (const purpose of b.purposes ?? []) {
+    if (purpose && haystack.includes(purpose)) score += 3;
+  }
+  for (const interest of b.interests ?? []) {
+    if (interest.length >= 2 && haystack.includes(interest)) score += 2;
+  }
+  if (b.industry && haystack.includes(b.industry)) score += 2;
+  if (p.is_large_amount) score += 0.5;
+  if (
+    p.is_startup &&
+    b.founded_year &&
+    new Date().getFullYear() - b.founded_year <= 5
+  ) {
+    score += 1;
+  }
+  return score;
+}
+
 function decideMode(b: BusinessRow, now: Date): "deep" | "light" | "skip" {
-  if (b.proposal_status === "pending" || !b.proposal_refreshed_at) return "deep";
+  if (b.proposal_status === "pending" || !b.proposal_refreshed_at)
+    return "deep";
   const age = differenceInCalendarDays(now, new Date(b.proposal_refreshed_at));
   return age >= STALE_DAYS ? "light" : "skip";
 }
@@ -126,13 +165,26 @@ async function processBusiness(
   // 所在地で粗くフィルタ（国＋自県＋全国）。
   const inArea = programs.filter((p) =>
     isProgramInArea(
-      { areaSearch: p.area_search ?? "", level: p.level as never, prefecture: p.prefecture },
+      {
+        areaSearch: p.area_search ?? "",
+        level: p.level as ProgramLevel,
+        prefecture: p.prefecture,
+      },
       b.prefecture,
       b.city,
     ),
   );
-  const byId = new Map(inArea.map((p) => [p.id, p]));
-  const candidates = inArea.map(toCandidate);
+  const pool = inArea
+    .map((p) => ({ p, score: candidateScore(b, p) }))
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        Number(b.p.is_large_amount) - Number(a.p.is_large_amount),
+    )
+    .slice(0, CANDIDATE_POOL)
+    .map((x) => x.p);
+  const byId = new Map(pool.map((p) => [p.id, p]));
+  const candidates = pool.map(toCandidate);
 
   const result = await buildProposal(profile, candidates, {
     mode,
@@ -198,12 +250,16 @@ async function processBusiness(
     del = del.not("program_id", "in", `(${keep.join(",")})`);
   }
   const { error: delErr } = await del;
-  if (delErr) throw new Error(`古い catalog matches 削除失敗: ${delErr.message}`);
+  if (delErr)
+    throw new Error(`古い catalog matches 削除失敗: ${delErr.message}`);
 
   // 状態を ready に。
   const { error: bErr } = await admin
     .from("businesses")
-    .update({ proposal_status: "ready", proposal_refreshed_at: now.toISOString() })
+    .update({
+      proposal_status: "ready",
+      proposal_refreshed_at: now.toISOString(),
+    })
     .eq("id", b.id);
   if (bErr) throw new Error(`businesses 更新失敗: ${bErr.message}`);
 
@@ -224,7 +280,9 @@ async function main(): Promise<void> {
 
   const programs = await fetchPrograms(admin);
   if (programs.length === 0) {
-    console.log("[build-proposals] programs が空です。先に seed:programs を実行してください");
+    console.log(
+      "[build-proposals] programs が空です。先に seed:programs を実行してください",
+    );
     return;
   }
 
