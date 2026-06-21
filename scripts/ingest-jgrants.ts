@@ -56,7 +56,8 @@ async function main(): Promise<void> {
   // 1b. 登録事業者の所在地名でも検索し、自治体補助金を拾う。
   const { data: bizPref } = await supabase
     .from("businesses")
-    .select("prefecture");
+    .select("prefecture")
+    .eq("lead_status", "approved");
   const areaKeywords = new Set<string>();
   for (const b of (bizPref ?? []) as { prefecture: string | null }[]) {
     if (b.prefecture) areaKeywords.add(stripPrefectureSuffix(b.prefecture));

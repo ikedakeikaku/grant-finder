@@ -27,6 +27,7 @@ pnpm dev
 - `NOTIFY_FROM_EMAIL` は実送信時のみ設定してください。公開サンプルには実ドメインのメールアドレスを置きません。
 - ユーザーの通知先メールアドレスはアプリDBに保存される個人情報です。ログや公開Issueへ貼らない運用にしてください。
 - リード確認は Supabase の `private.leads` ビューを使います。通常ユーザーには公開しません。
+- 登録直後のリードは `pending_review` です。`approved` にするまで提案生成・通知対象になりません。
 - 本番 `APP_BASE_URL` は `https://...` を設定してください。
 
 ## Leads
@@ -37,6 +38,16 @@ Supabase SQL Editor で次のように確認します。`private` schema は API
 select *
 from private.leads
 order by signed_up_at desc;
+```
+
+承認する場合:
+
+```sql
+update public.businesses
+set lead_status = 'approved',
+    approved_at = now(),
+    proposal_status = 'pending'
+where id = '<business_id>';
 ```
 
 ## Checks

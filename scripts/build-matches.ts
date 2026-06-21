@@ -22,7 +22,8 @@ async function main(): Promise<void> {
     .from("businesses")
     .select(
       "id, industry, prefecture, city, employee_count, purposes, interests, description, planned_investment",
-    );
+    )
+    .eq("lead_status", "approved");
   if (error) throw new Error(`businesses 取得失敗: ${error.message}`);
 
   let total = 0;

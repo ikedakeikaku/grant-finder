@@ -36,6 +36,7 @@ interface MatchRow {
   businesses: {
     notifications_enabled: boolean;
     notify_email: string | null;
+    lead_status: string | null;
   } | null;
   subsidies: { acceptance_end_datetime: string | null } | null;
 }
@@ -46,6 +47,7 @@ interface PredictedMatchRow {
   businesses: {
     notifications_enabled: boolean;
     notify_email: string | null;
+    lead_status: string | null;
   } | null;
   subsidy_predictions: { predicted_start_from: string | null } | null;
   programs: { next_open_from: string | null } | null;
@@ -57,7 +59,11 @@ interface DueRow {
   status: "scheduled" | "processing";
   processing_started_at: string | null;
   business_id: string;
-  businesses: { notify_email: string | null; name: string | null } | null;
+  businesses: {
+    notify_email: string | null;
+    name: string | null;
+    lead_status: string | null;
+  } | null;
   matches: {
     kind: string;
     reasons: string[] | null;
@@ -98,7 +104,7 @@ async function enqueue(supabase: SupabaseAdmin, now: Date): Promise<number> {
   const { data, error } = await supabase
     .from("matches")
     .select(
-      "id, business_id, businesses(notifications_enabled, notify_email), subsidies(acceptance_end_datetime)",
+      "id, business_id, businesses(notifications_enabled, notify_email, lead_status), subsidies(acceptance_end_datetime)",
     )
     .eq("kind", "open")
     .eq("dismissed", false);
@@ -124,7 +130,12 @@ async function enqueue(supabase: SupabaseAdmin, now: Date): Promise<number> {
   const toInsert: Array<Record<string, unknown>> = [];
   for (const m of matches) {
     const biz = m.businesses;
-    if (!biz?.notifications_enabled || !biz.notify_email) continue;
+    if (
+      !biz?.notifications_enabled ||
+      !biz.notify_email ||
+      biz.lead_status !== "approved"
+    )
+      continue;
     const acceptanceEnd = toDate(m.subsidies?.acceptance_end_datetime);
     const planned = planNotifications(
       { existingTypes: existingByMatch.get(m.id) ?? [], acceptanceEnd },
@@ -162,7 +173,7 @@ async function enqueuePreAnnounce(
   const { data, error } = await supabase
     .from("matches")
     .select(
-      "id, business_id, businesses(notifications_enabled, notify_email), subsidy_predictions(predicted_start_from), programs(next_open_from)",
+      "id, business_id, businesses(notifications_enabled, notify_email, lead_status), subsidy_predictions(predicted_start_from), programs(next_open_from)",
     )
     .in("kind", ["predicted", "catalog"])
     .eq("dismissed", false);
@@ -183,7 +194,12 @@ async function enqueuePreAnnounce(
   const toInsert: Array<Record<string, unknown>> = [];
   for (const m of matches) {
     const biz = m.businesses;
-    if (!biz?.notifications_enabled || !biz.notify_email) continue;
+    if (
+      !biz?.notifications_enabled ||
+      !biz.notify_email ||
+      biz.lead_status !== "approved"
+    )
+      continue;
     if (sentSet.has(m.id)) continue;
     const start =
       toDate(m.subsidy_predictions?.predicted_start_from) ??
@@ -220,7 +236,8 @@ async function enqueueProposalDigest(
     .from("businesses")
     .select("id, notifications_enabled, notify_email, proposal_status")
     .eq("proposal_status", "ready")
-    .eq("notifications_enabled", true);
+    .eq("notifications_enabled", true)
+    .eq("lead_status", "approved");
   if (error) throw new Error(`businesses 取得失敗: ${error.message}`);
   const businesses = (data ?? []) as Array<{
     id: string;
@@ -304,13 +321,14 @@ async function sendDue(
     if (!claimed) continue;
 
     const to = n.businesses?.notify_email ?? null;
+    const approved = n.businesses?.lead_status === "approved";
 
     let email: { subject: string; text: string; html: string } | null = null;
 
     if (n.type === "proposal_digest") {
       const proposal = await fetchProposal(supabase, n.business_id);
       const items = (proposal?.items ?? []).filter(Boolean);
-      if (to && items.length > 0) {
+      if (approved && to && items.length > 0) {
         email = renderProposalDigestEmail({
           businessName: n.businesses?.name ?? null,
           summary: proposal?.summary ?? "",
@@ -349,7 +367,7 @@ async function sendDue(
           acceptanceEnd = toDate(sub.acceptance_end_datetime);
         }
       }
-      if (to && title) {
+      if (approved && to && title) {
         email = renderNotificationEmail({
           type: n.type,
           subsidyTitle: title,
@@ -406,7 +424,7 @@ async function fetchDueNotifications(
   now: Date,
 ): Promise<DueRow[]> {
   const select =
-    "id, type, status, processing_started_at, business_id, businesses(notify_email, name), matches(kind, reasons, subsidies(title, front_subsidy_detail_page_url, acceptance_end_datetime), subsidy_predictions(name, basis, predicted_start_from), programs(name, official_url, next_open_from))";
+    "id, type, status, processing_started_at, business_id, businesses(notify_email, name, lead_status), matches(kind, reasons, subsidies(title, front_subsidy_detail_page_url, acceptance_end_datetime), subsidy_predictions(name, basis, predicted_start_from), programs(name, official_url, next_open_from))";
   const nowIso = now.toISOString();
   const staleBefore = new Date(
     now.getTime() - PROCESSING_STALE_MINUTES * 60 * 1000,

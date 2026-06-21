@@ -74,10 +74,42 @@ export default async function DashboardPage() {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, proposal_status")
+    .select("id, name, proposal_status, lead_status")
     .eq("user_id", user.id)
     .maybeSingle();
   if (!business) redirect("/profile");
+  const leadStatus =
+    (business.lead_status as string | null) ?? "pending_review";
+
+  if (leadStatus !== "approved") {
+    const message =
+      leadStatus === "suspended"
+        ? "現在、このアカウントの提案生成と通知は停止されています。確認が必要な場合はお問い合わせください。"
+        : "登録内容を受け付けました。確認後に提案書を作成し、メールでお知らせします。";
+    return (
+      <main className="mx-auto max-w-3xl px-6 py-10">
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{business.name} さんへの提案</h1>
+            <p className="mt-1 text-sm text-gray-600">ステータス確認中</p>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <Link href="/profile" className="text-blue-700 underline">
+              条件を編集
+            </Link>
+            <form action={signOut}>
+              <button type="submit" className="text-gray-500 underline">
+                ログアウト
+              </button>
+            </form>
+          </div>
+        </header>
+        <section className="mt-8 rounded-lg border border-gray-200 bg-gray-50 p-6 text-sm text-gray-700">
+          {message}
+        </section>
+      </main>
+    );
+  }
 
   // 調査済みの提案書（制度マスタベース）
   const { data: proposalData } = await supabase

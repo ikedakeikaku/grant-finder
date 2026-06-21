@@ -40,11 +40,12 @@ export async function saveProfile(
   // 1ユーザー1事業者を想定。既存があれば更新、なければ作成。
   const { data: existing } = await supabase
     .from("businesses")
-    .select("id")
+    .select("id, lead_status")
     .eq("user_id", user.id)
     .maybeSingle();
 
   let businessId: string;
+  let leadStatus = "pending_review";
   if (existing) {
     const { error } = await supabase
       .from("businesses")
@@ -52,6 +53,7 @@ export async function saveProfile(
       .eq("id", existing.id);
     if (error) return { error: `保存に失敗しました: ${error.message}` };
     businessId = existing.id as string;
+    leadStatus = (existing.lead_status as string | null) ?? "pending_review";
   } else {
     const { data: inserted, error } = await supabase
       .from("businesses")
@@ -60,6 +62,11 @@ export async function saveProfile(
       .single();
     if (error) return { error: `保存に失敗しました: ${error.message}` };
     businessId = inserted.id as string;
+  }
+
+  if (leadStatus !== "approved") {
+    revalidatePath("/dashboard");
+    redirect("/dashboard");
   }
 
   // 提案書（制度マスタベース）はバッチ build-proposals が深掘り生成する。

@@ -16,7 +16,8 @@ async function main(): Promise<void> {
     .select(
       "id, name, industry, prefecture, city, employee_count, annual_revenue, founded_year, purposes, interests, description, planned_investment",
     )
-    .eq("proposal_status", "needs_research");
+    .eq("proposal_status", "needs_research")
+    .eq("lead_status", "approved");
   if (error) throw new Error(`businesses 取得失敗: ${error.message}`);
 
   const { data: progs, error: pErr } = await admin
