@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isAdminEmail } from "@/lib/admin/access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -6,6 +7,7 @@ export default async function Home() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const isAdmin = isAdminEmail(user?.email);
 
   return (
     <main className="mx-auto flex max-w-3xl flex-1 flex-col justify-center px-6 py-16">
@@ -33,6 +35,14 @@ export default async function Home() {
             className="rounded-md border border-gray-300 px-6 py-3"
           >
             ログイン
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
+            href="/admin/leads"
+            className="rounded-md border border-gray-300 px-6 py-3"
+          >
+            リード管理
           </Link>
         )}
       </div>

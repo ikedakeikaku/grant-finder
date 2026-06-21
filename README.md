@@ -24,6 +24,7 @@ pnpm dev
 
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` はブラウザへ公開される前提の anon key です。アクセス制御は Supabase RLS で行います。
 - `SUPABASE_SERVICE_ROLE_KEY`、`ANTHROPIC_API_KEY`、`RESEND_API_KEY` はサーバー/Actions 専用です。
+- `ADMIN_EMAILS` に管理画面を使うログインメールアドレスを設定します。未設定なら管理画面は使えません。
 - `NOTIFY_FROM_EMAIL` は実送信時のみ設定してください。公開サンプルには実ドメインのメールアドレスを置きません。
 - ユーザーの通知先メールアドレスはアプリDBに保存される個人情報です。ログや公開Issueへ貼らない運用にしてください。
 - リード確認は Supabase の `private.leads` ビューを使います。通常ユーザーには公開しません。
@@ -32,7 +33,9 @@ pnpm dev
 
 ## Leads
 
-Supabase SQL Editor で次のように確認します。`private` schema は API の exposed schemas に追加しないでください。
+`ADMIN_EMAILS` に設定したメールアドレスでログインし、`/admin/leads` から承認・停止できます。
+
+Supabase SQL Editor で確認する場合は次のSQLを使います。`private` schema は API の exposed schemas に追加しないでください。
 
 ```sql
 select *

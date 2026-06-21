@@ -7,7 +7,8 @@
 - `SUPABASE_SERVICE_ROLE_KEY` は GitHub Actions / Vercel / ローカル `.env.local` のサーバー側だけに置く。
 - `private` schema を API exposed schemas に追加しない。
 - RLS を無効化しない。
-- リード確認は SQL Editor で `private.leads` を見る。
+- リード承認は `/admin/leads` を使う。
+- SQL Editor で詳細確認する場合は `private.leads` を見る。
 
 ```sql
 select *
@@ -38,6 +39,7 @@ where id = '<business_id>';
 - GitHub Actions は workflow の `permissions: contents: read` を維持する。
 - Actions secrets は必要最小限にする。
 - Vercel の client 側に出る環境変数は `NEXT_PUBLIC_*` だけにする。
+- Vercel に `ADMIN_EMAILS` を設定し、管理者のログインメールだけをカンマ区切りで入れる。
 - 本番 `APP_BASE_URL` は `https://...` にする。
 
 ## Cost Controls
@@ -49,5 +51,6 @@ where id = '<business_id>';
 ## Abuse Controls
 
 - 初期公開時は承認制で運用する。
+- 承認・停止は `/admin/leads` で行う。
 - CAPTCHA を入れる場合は Supabase Auth の CAPTCHA 設定または Cloudflare Turnstile を使う。
 - 大量登録が見えたら該当 `businesses.lead_status` を `suspended` にする。
