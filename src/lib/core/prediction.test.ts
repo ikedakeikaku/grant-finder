@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { predictNextOpening } from "./prediction";
+import { applyBudgetSignal, predictNextOpening } from "./prediction";
 
 const now = new Date("2026-06-20T00:00:00Z");
 
@@ -47,5 +47,34 @@ describe("predictNextOpening", () => {
       now,
     )!;
     expect(concentrated.confidence).toBeGreaterThan(scattered.confidence);
+  });
+});
+
+describe("applyBudgetSignal", () => {
+  const base = predictNextOpening(
+    [new Date("2024-09-01T00:00:00Z"), new Date("2025-09-01T00:00:00Z")],
+    now,
+  )!;
+
+  it("シグナルが無ければ予測はそのまま", () => {
+    expect(applyBudgetSignal(base, null)).toEqual(base);
+  });
+
+  it("予算シグナルで信頼度が上がり根拠に明記される", () => {
+    const out = applyBudgetSignal(base, "tousho", new Date("2026-04-10T00:00:00Z"));
+    expect(out.confidence).toBeGreaterThan(base.confidence);
+    expect(out.basis).toContain("当初予算成立");
+    expect(out.basis).toContain("2026/4");
+  });
+
+  it("当初予算成立は概算要求より強く押し上げる", () => {
+    const tousho = applyBudgetSignal(base, "tousho");
+    const gaisan = applyBudgetSignal(base, "gaisan_youkyuu");
+    expect(tousho.confidence).toBeGreaterThan(gaisan.confidence);
+  });
+
+  it("信頼度は1を超えない", () => {
+    const high = { ...base, confidence: 0.95 };
+    expect(applyBudgetSignal(high, "tousho").confidence).toBeLessThanOrEqual(1);
   });
 });

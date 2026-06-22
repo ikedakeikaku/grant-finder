@@ -58,3 +58,41 @@ export function predictNextOpening(
 
   return { month, from, to, confidence, basis, sampleSize: valid.length };
 }
+
+/** 予算動向シグナルの種類（概算要求→補正→当初予算成立の順で公募が近い）。 */
+export type BudgetSignalKind = "gaisan_youkyuu" | "hosei" | "tousho";
+
+/** 予算が確保された制度ほど公募が近いとみなし、信頼度をどれだけ押し上げるか。 */
+const BUDGET_SIGNAL_BOOST: Record<BudgetSignalKind, number> = {
+  gaisan_youkyuu: 0.1, // 概算要求（まだ要求段階）
+  hosei: 0.2, // 補正予算
+  tousho: 0.25, // 当初予算（成立）
+};
+
+const BUDGET_SIGNAL_LABEL: Record<BudgetSignalKind, string> = {
+  gaisan_youkyuu: "概算要求",
+  hosei: "補正予算",
+  tousho: "当初予算成立",
+};
+
+/**
+ * 例年パターンの予測に「予算動向シグナル」を反映する純粋関数。
+ * 予算が付いた＝公募が近いと見て confidence を押し上げ、根拠に明記する。
+ * シグナルが無ければ予測はそのまま返す（差別化点「予算動向で予告」の実体）。
+ */
+export function applyBudgetSignal(
+  prediction: OpeningPrediction,
+  kind: BudgetSignalKind | null | undefined,
+  detectedAt?: Date | null,
+): OpeningPrediction {
+  if (!kind) return prediction;
+  const ym =
+    detectedAt && !Number.isNaN(detectedAt.getTime())
+      ? `${detectedAt.getUTCFullYear()}/${detectedAt.getUTCMonth() + 1}検知`
+      : "検知";
+  return {
+    ...prediction,
+    confidence: Math.min(1, prediction.confidence + BUDGET_SIGNAL_BOOST[kind]),
+    basis: `${prediction.basis}／予算: ${BUDGET_SIGNAL_LABEL[kind]}（${ym}）`,
+  };
+}
