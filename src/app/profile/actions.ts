@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { parseProfileForm, toBusinessRow } from "@/lib/validation";
+import { notifyDiscord } from "@/lib/notifications/discord";
+import { buildAppUrl } from "@/lib/url";
 import {
   fetchOpenSubsidiesForMatch,
   fetchActivePredictions,
@@ -62,6 +64,24 @@ export async function saveProfile(
       .single();
     if (error) return { error: `保存に失敗しました: ${error.message}` };
     businessId = inserted.id as string;
+
+    // 新規リードは運営へ即 Discord 通知（早期フォローのため）。
+    // 失敗しても登録は妨げない。メール等の個人情報は載せず、詳細は管理画面で確認する。
+    try {
+      const d = parsed.data;
+      await notifyDiscord(
+        [
+          "🆕 新規リード登録",
+          `事業者: ${d.name}`,
+          `業種: ${d.industry ?? "—"} / 地域: ${d.prefecture ?? "—"} / 従業員: ${d.employeeCount ?? "—"}`,
+          `目的: ${d.purposes.length ? d.purposes.join("、") : "—"}`,
+          `関心: ${d.interests.length ? d.interests.join("、") : "—"}`,
+          `承認 → ${buildAppUrl("/admin/leads")}`,
+        ].join("\n"),
+      );
+    } catch (e) {
+      console.error("[profile] Discord通知に失敗:", e);
+    }
   }
 
   if (leadStatus !== "approved") {
