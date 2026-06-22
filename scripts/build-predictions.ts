@@ -1,6 +1,10 @@
 import "./load-env";
 import { createSupabaseAdminClient } from "../src/lib/supabase/admin";
-import { predictNextOpening } from "../src/lib/core/prediction";
+import {
+  applyBudgetSignal,
+  predictNextOpening,
+  type BudgetSignalKind,
+} from "../src/lib/core/prediction";
 
 /**
  * 公募前予測の生成バッチ。
@@ -51,6 +55,28 @@ async function main(): Promise<void> {
       .filter((k): k is string => !!k),
   );
 
+  // 予算動向シグナル（概算要求/補正/当初予算）。schedule_key ごとに最新の1件を採用。
+  const { data: sigData, error: sErr } = await admin
+    .from("budget_signals")
+    .select("schedule_key, kind, detected_at, status")
+    .neq("status", "dismissed");
+  if (sErr) throw new Error(`budget_signals 取得失敗: ${sErr.message}`);
+  const sigByKey = new Map<
+    string,
+    { kind: BudgetSignalKind; detectedAt: Date }
+  >();
+  for (const s of (sigData ?? []) as Array<{
+    schedule_key: string | null;
+    kind: BudgetSignalKind;
+    detected_at: string | null;
+  }>) {
+    if (!s.schedule_key) continue;
+    const detectedAt = new Date(s.detected_at ?? 0);
+    const cur = sigByKey.get(s.schedule_key);
+    if (!cur || detectedAt > cur.detectedAt)
+      sigByKey.set(s.schedule_key, { kind: s.kind, detectedAt });
+  }
+
   // schedule_key ごとに集計
   const byKey = new Map<string, { name: string; starts: Date[] }>();
   for (const s of schedules) {
@@ -64,13 +90,18 @@ async function main(): Promise<void> {
 
   const rows: Array<Record<string, unknown>> = [];
   let skippedOpen = 0;
+  let withSignal = 0;
   for (const [key, g] of byKey.entries()) {
     if (openKeys.has(key)) {
       skippedOpen++;
       continue; // 現在公募中はライブ提案に任せる
     }
-    const p = predictNextOpening(g.starts, now);
-    if (!p) continue;
+    const base = predictNextOpening(g.starts, now);
+    if (!base) continue;
+    // 予算動向シグナルがあれば反映（信頼度を上げ根拠に明記）。
+    const sig = sigByKey.get(key);
+    if (sig) withSignal++;
+    const p = applyBudgetSignal(base, sig?.kind ?? null, sig?.detectedAt ?? null);
     rows.push({
       schedule_key: key,
       name: g.name,
@@ -95,7 +126,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `[predict] 制度数=${byKey.size} 現公募で除外=${skippedOpen} 予測生成=${upserted}件`,
+    `[predict] 制度数=${byKey.size} 現公募で除外=${skippedOpen} 予算反映=${withSignal}件 予測生成=${upserted}件`,
   );
 }
 
