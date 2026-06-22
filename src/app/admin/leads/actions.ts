@@ -38,7 +38,9 @@ export async function approveLead(formData: FormData): Promise<void> {
     .update({
       lead_status: "approved",
       approved_at: new Date().toISOString(),
-      proposal_status: "pending",
+      // 承認＝調査キューへ投入。/research-grants(定額) で深掘り調査する。
+      // 従量APIの build-proposals は needs_research を skip するため二重課金にならない。
+      proposal_status: "needs_research",
     })
     .eq("id", businessId);
 
