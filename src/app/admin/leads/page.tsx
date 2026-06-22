@@ -22,7 +22,7 @@ interface LeadRow {
   annual_revenue: number | null;
   purposes: string[] | null;
   interests: string[] | null;
-  planned_investment: number | null;
+  planned_investment: string | null;
   proposal_status: string | null;
   lead_status: LeadStatus | null;
   approved_at: string | null;
@@ -90,9 +90,10 @@ function formatDate(iso: string | null): string {
   }).format(date);
 }
 
-function formatYen(yen: number | null): string {
-  if (yen == null) return "-";
-  return `${Math.round(yen / 10000).toLocaleString("ja-JP")}万円`;
+// annual_revenue は DB 上すでに「万円」単位（年商(万円)）なので割らずにそのまま表示する。
+function formatMan(man: number | null): string {
+  if (man == null) return "-";
+  return `${man.toLocaleString("ja-JP")}万円`;
 }
 
 function joinTags(values: string[] | null): string {
@@ -224,10 +225,10 @@ export default async function AdminLeadsPage() {
                       {lead.employee_count?.toLocaleString("ja-JP") ?? "-"}人
                     </p>
                     <p className="mt-1">
-                      年商 {formatYen(lead.annual_revenue)}
+                      年商 {formatMan(lead.annual_revenue)}
                     </p>
                     <p className="mt-1">
-                      投資予定 {formatYen(lead.planned_investment)}
+                      投資予定 {lead.planned_investment?.trim() || "-"}
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
                       目的: {joinTags(lead.purposes)}
