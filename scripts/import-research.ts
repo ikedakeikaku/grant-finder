@@ -7,6 +7,7 @@ import {
   toProgramRow,
   type RawProgram,
 } from "../src/lib/catalog/programs";
+import { sendProposalDigestNow } from "../src/lib/notifications/proposal-digest";
 
 /**
  * Claude Code(定額) が行った深掘り調査の結果を DB に書き戻すバッチ。
@@ -160,6 +161,7 @@ async function main(): Promise<void> {
   const admin = createSupabaseAdminClient();
   let ok = 0;
   let total = 0;
+  let mailed = 0;
   for (const r of results) {
     if (!r?.businessId) {
       console.error("[import-research] businessId 欠落のレコードをスキップ");
@@ -173,10 +175,25 @@ async function main(): Promise<void> {
         `[import-research] business=${r.businessId} 失敗:`,
         e instanceof Error ? e.message : e,
       );
+      continue;
+    }
+    // 調査完了＝即時で提案書ダイジェストを送る（送信失敗は反映を妨げない）。
+    try {
+      const d = await sendProposalDigestNow(admin, r.businessId, now);
+      if (d.ok) mailed++;
+      else
+        console.log(
+          `[import-research] business=${r.businessId} 通知スキップ: ${d.reason ?? ""}`,
+        );
+    } catch (e) {
+      console.error(
+        `[import-research] business=${r.businessId} 通知失敗:`,
+        e instanceof Error ? e.message : e,
+      );
     }
   }
   console.log(
-    `[import-research] ${ok}/${results.length}件 反映、提案 ${total}件`,
+    `[import-research] ${ok}/${results.length}件 反映、提案 ${total}件、即時メール ${mailed}件`,
   );
 }
 
