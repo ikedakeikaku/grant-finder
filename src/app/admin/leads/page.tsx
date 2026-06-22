@@ -20,6 +20,7 @@ interface LeadRow {
   city: string | null;
   employee_count: number | null;
   annual_revenue: number | null;
+  founded_year: number | null;
   purposes: string[] | null;
   interests: string[] | null;
   planned_investment: string | null;
@@ -69,7 +70,7 @@ async function fetchLeads(): Promise<LeadRow[]> {
   const { data, error } = await admin
     .from("businesses")
     .select(
-      "id, name, notify_email, notifications_enabled, industry, prefecture, city, employee_count, annual_revenue, purposes, interests, planned_investment, proposal_status, lead_status, approved_at, created_at, updated_at",
+      "id, name, notify_email, notifications_enabled, industry, prefecture, city, employee_count, annual_revenue, founded_year, purposes, interests, planned_investment, proposal_status, lead_status, approved_at, created_at, updated_at",
     )
     .order("created_at", { ascending: false })
     .limit(200);
@@ -296,7 +297,8 @@ export default async function AdminLeadsPage() {
                       {lead.employee_count?.toLocaleString("ja-JP") ?? "-"}人
                     </p>
                     <p className="mt-1">
-                      年商 {formatMan(lead.annual_revenue)}
+                      年商 {formatMan(lead.annual_revenue)} / 設立{" "}
+                      {lead.founded_year ? `${lead.founded_year}年` : "-"}
                     </p>
                     <p className="mt-1">
                       投資予定 {lead.planned_investment?.trim() || "-"}
