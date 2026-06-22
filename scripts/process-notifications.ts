@@ -6,8 +6,8 @@ import {
   type NotificationType,
 } from "../src/lib/core/notify-plan";
 import {
-  renderNotificationEmail,
-  renderProposalDigestEmail,
+  renderBatchedEmail,
+  type BatchedAlert,
   type ProposalEmailItem,
 } from "../src/lib/notifications/render";
 import {
@@ -303,7 +303,7 @@ async function sendDue(
   supabase: SupabaseAdmin,
   sender: EmailSender,
   now: Date,
-): Promise<{ sent: number; failed: number; skipped: number }> {
+): Promise<{ sent: number; failed: number; skipped: number; emails: number }> {
   if (process.env.RESEND_API_KEY && !safeHttpUrl(process.env.APP_BASE_URL)) {
     throw new Error(
       "実メール送信時は APP_BASE_URL に https://... を設定してください",
@@ -312,111 +312,121 @@ async function sendDue(
   const appBaseUrl = buildAppUrl("/dashboard");
   const due = await fetchDueNotifications(supabase, now);
 
+  // 1事業者・1実行分の通知を1通にまとめる（補助金ごとの多重送信を防ぐ）。
+  const byBiz = new Map<string, DueRow[]>();
+  for (const n of due) {
+    const list = byBiz.get(n.business_id) ?? [];
+    list.push(n);
+    byBiz.set(n.business_id, list);
+  }
+
   let sent = 0;
   let failed = 0;
   let skipped = 0;
+  let emails = 0;
 
-  for (const n of due) {
-    const claimed = await claimNotification(supabase, n, now);
-    if (!claimed) continue;
+  for (const rows of byBiz.values()) {
+    // 並行実行に備え各通知を claim。取れたものだけ処理する。
+    const claimed: DueRow[] = [];
+    for (const n of rows) {
+      if (await claimNotification(supabase, n, now)) claimed.push(n);
+    }
+    if (claimed.length === 0) continue;
 
-    const to = n.businesses?.notify_email ?? null;
-    const approved = n.businesses?.lead_status === "approved";
+    const first = claimed[0]!;
+    const to = first.businesses?.notify_email ?? null;
+    const approved = first.businesses?.lead_status === "approved";
 
-    let email: { subject: string; text: string; html: string } | null = null;
+    const finalize = async (
+      status: "sent" | "failed" | "skipped",
+      error: string | null,
+    ) => {
+      await supabase
+        .from("notifications")
+        .update({
+          status,
+          processing_started_at: null,
+          sent_at: status === "sent" ? now.toISOString() : null,
+          error,
+        })
+        .in(
+          "id",
+          claimed.map((c) => c.id),
+        );
+    };
 
-    if (n.type === "proposal_digest") {
-      const proposal = await fetchProposal(supabase, n.business_id);
-      const items = (proposal?.items ?? []).filter(Boolean);
-      if (approved && to && items.length > 0) {
-        email = renderProposalDigestEmail({
-          businessName: n.businesses?.name ?? null,
-          summary: proposal?.summary ?? "",
-          items,
-          appBaseUrl,
-          now,
-        });
+    if (!approved || !to) {
+      await finalize("skipped", "宛先または未承認");
+      skipped += claimed.length;
+      continue;
+    }
+
+    // 提案書ダイジェストと各アラートに振り分け、1通に束ねる。
+    let proposal: { summary: string; items: ProposalEmailItem[] } | null = null;
+    const alerts: BatchedAlert[] = [];
+    for (const n of claimed) {
+      if (n.type === "proposal_digest") {
+        const p = await fetchProposal(supabase, n.business_id);
+        const items = (p?.items ?? []).filter(Boolean);
+        if (items.length > 0)
+          proposal = { summary: p?.summary ?? "", items };
+        continue;
       }
-    } else {
       const mk = n.matches;
-      // open は subsidies、predicted/catalog は予測・programs から本文を作る。
       let title: string | null = null;
-      let subsidyUrl: string | null = null;
+      let url: string | null = null;
       let acceptanceEnd: Date | null = null;
-      let reasons: string[] = mk?.reasons ?? [];
+      let predictedStart: Date | null = null;
+      const reasons: string[] = mk?.reasons ?? [];
       if (mk?.kind === "predicted") {
         const pr = mk.subsidy_predictions;
         if (pr) {
           title = pr.name;
-          reasons = [...reasons, pr.basis].filter((x): x is string => !!x);
+          predictedStart = toDate(pr.predicted_start_from);
         }
       } else if (mk?.kind === "catalog") {
         const pg = mk.programs;
         if (pg) {
           title = pg.name;
-          subsidyUrl = pg.official_url;
-          const open = toDate(pg.next_open_from);
-          if (open)
-            reasons = [...reasons, `公募開始の見込み：${formatYm(open)}頃`];
+          url = pg.official_url;
+          predictedStart = toDate(pg.next_open_from);
         }
       } else {
         const sub = mk?.subsidies;
         if (sub) {
           title = sub.title;
-          subsidyUrl = sub.front_subsidy_detail_page_url;
+          url = sub.front_subsidy_detail_page_url;
           acceptanceEnd = toDate(sub.acceptance_end_datetime);
         }
       }
-      if (approved && to && title) {
-        email = renderNotificationEmail({
-          type: n.type,
-          subsidyTitle: title,
-          subsidyUrl,
-          acceptanceEnd,
-          reasons,
-          appBaseUrl,
-          now,
-        });
-      }
+      if (title)
+        alerts.push({ type: n.type, title, url, acceptanceEnd, predictedStart, reasons });
     }
 
+    const email = renderBatchedEmail({
+      businessName: first.businesses?.name ?? null,
+      appBaseUrl,
+      now,
+      proposal,
+      alerts,
+    });
     if (!email) {
-      await supabase
-        .from("notifications")
-        .update({
-          status: "skipped",
-          processing_started_at: null,
-          error: "宛先または対象情報なし",
-        })
-        .eq("id", n.id);
-      skipped++;
+      await finalize("skipped", "対象情報なし");
+      skipped += claimed.length;
       continue;
     }
 
-    const result = await sender.send({ to: to as string, ...email });
-    await supabase
-      .from("notifications")
-      .update({
-        status: result.ok ? "sent" : "failed",
-        processing_started_at: null,
-        sent_at: result.ok ? now.toISOString() : null,
-        error: result.ok ? null : (result.error ?? null),
-      })
-      .eq("id", n.id);
-    if (result.ok) sent++;
-    else failed++;
+    const result = await sender.send({ to, ...email });
+    await finalize(
+      result.ok ? "sent" : "failed",
+      result.ok ? null : (result.error ?? null),
+    );
+    emails += 1;
+    if (result.ok) sent += claimed.length;
+    else failed += claimed.length;
   }
 
-  return { sent, failed, skipped };
-}
-
-const YM = new Intl.DateTimeFormat("ja-JP", {
-  timeZone: "Asia/Tokyo",
-  year: "numeric",
-  month: "long",
-});
-function formatYm(d: Date): string {
-  return YM.format(d);
+  return { sent, failed, skipped, emails };
 }
 
 async function fetchDueNotifications(
@@ -498,7 +508,7 @@ async function main(): Promise<void> {
 
   const r = await sendDue(supabase, sender, now);
   console.log(
-    `[notify] 送信 sent=${r.sent} failed=${r.failed} skipped=${r.skipped}`,
+    `[notify] 送信 メール=${r.emails}通 (通知 sent=${r.sent} failed=${r.failed} skipped=${r.skipped})`,
   );
 }
 
