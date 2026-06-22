@@ -178,6 +178,8 @@ async function main(): Promise<void> {
       continue;
     }
     // 調査完了＝即時で提案書ダイジェストを送る（送信失敗は反映を妨げない）。
+    // 再import/backfill時など通知を飛ばしたくない場合は IMPORT_SKIP_MAIL=1 でスキップ。
+    if (process.env.IMPORT_SKIP_MAIL === "1") continue;
     try {
       const d = await sendProposalDigestNow(admin, r.businessId, now);
       if (d.ok) mailed++;
