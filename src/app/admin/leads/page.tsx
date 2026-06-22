@@ -30,6 +30,17 @@ interface LeadRow {
   updated_at: string | null;
 }
 
+interface ProposalItem {
+  name: string;
+  subsidyMax: number | null;
+  status?: string | null;
+}
+
+interface ProposalInfo {
+  summary: string | null;
+  items: ProposalItem[];
+}
+
 const statusOrder: Record<LeadStatus, number> = {
   pending_review: 0,
   approved: 1,
@@ -72,6 +83,28 @@ async function fetchLeads(): Promise<LeadRow[]> {
   });
 }
 
+/** 事業者ごとの提案書（調査結果）を business_id 引きで取得する。 */
+async function fetchProposals(): Promise<Map<string, ProposalInfo>> {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("proposals")
+    .select("business_id, summary, items");
+  if (error) throw new Error("提案の取得に失敗しました");
+
+  const map = new Map<string, ProposalInfo>();
+  for (const row of (data ?? []) as {
+    business_id: string;
+    summary: string | null;
+    items: ProposalItem[] | null;
+  }[]) {
+    map.set(row.business_id, {
+      summary: row.summary,
+      items: (row.items ?? []).filter(Boolean),
+    });
+  }
+  return map;
+}
+
 function statusClass(status: LeadStatus): string {
   if (status === "approved")
     return "border-emerald-200 bg-emerald-50 text-emerald-800";
@@ -94,6 +127,38 @@ function formatDate(iso: string | null): string {
 function formatMan(man: number | null): string {
   if (man == null) return "-";
   return `${man.toLocaleString("ja-JP")}万円`;
+}
+
+// 提案カードの subsidyMax は円単位なので、表示用に万円へ丸める。
+function formatYenAsMan(yen: number | null): string {
+  if (yen == null || yen === 0) return "—";
+  return `${Math.round(yen / 10000).toLocaleString("ja-JP")}万円`;
+}
+
+/** proposal_status から調査状況バッジを決める。 */
+function researchBadge(
+  proposalStatus: string | null,
+  hasProposal: boolean,
+): { label: string; cls: string } {
+  if (proposalStatus === "ready" && hasProposal)
+    return {
+      label: "✅ 調査完了",
+      cls: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    };
+  if (proposalStatus === "needs_research")
+    return {
+      label: "🔎 調査待ち",
+      cls: "border-blue-200 bg-blue-50 text-blue-700",
+    };
+  if (proposalStatus === "ready")
+    return {
+      label: "調査完了（提案なし）",
+      cls: "border-gray-200 bg-gray-50 text-gray-600",
+    };
+  return {
+    label: "⏳ 調査前",
+    cls: "border-gray-200 bg-gray-50 text-gray-500",
+  };
 }
 
 function joinTags(values: string[] | null): string {
@@ -150,7 +215,10 @@ function LeadActions({ lead }: { lead: LeadRow }) {
 
 export default async function AdminLeadsPage() {
   const adminEmail = await requireAdminEmail();
-  const leads = await fetchLeads();
+  const [leads, proposals] = await Promise.all([
+    fetchLeads(),
+    fetchProposals(),
+  ]);
   const pendingCount = leads.filter(
     (lead) => (lead.lead_status ?? "pending_review") === "pending_review",
   ).length;
@@ -188,6 +256,7 @@ export default async function AdminLeadsPage() {
               <th className="border-b border-gray-200 px-4 py-3">状態</th>
               <th className="border-b border-gray-200 px-4 py-3">事業者</th>
               <th className="border-b border-gray-200 px-4 py-3">条件</th>
+              <th className="border-b border-gray-200 px-4 py-3">調査・提案</th>
               <th className="border-b border-gray-200 px-4 py-3">登録</th>
               <th className="border-b border-gray-200 px-4 py-3">操作</th>
             </tr>
@@ -195,6 +264,11 @@ export default async function AdminLeadsPage() {
           <tbody>
             {leads.map((lead) => {
               const status = lead.lead_status ?? "pending_review";
+              const prop = proposals.get(lead.id);
+              const badge = researchBadge(
+                lead.proposal_status,
+                !!(prop && prop.items.length > 0),
+              );
               return (
                 <tr key={lead.id} className="align-top">
                   <td className="border-b border-gray-100 px-4 py-4">
@@ -203,9 +277,6 @@ export default async function AdminLeadsPage() {
                     >
                       {statusLabels[status]}
                     </span>
-                    <p className="mt-2 text-xs text-gray-500">
-                      提案: {lead.proposal_status ?? "-"}
-                    </p>
                   </td>
                   <td className="border-b border-gray-100 px-4 py-4">
                     <p className="font-medium">{lead.name ?? "名称未設定"}</p>
@@ -236,6 +307,24 @@ export default async function AdminLeadsPage() {
                     <p className="mt-1 text-xs text-gray-500">
                       関心: {joinTags(lead.interests)}
                     </p>
+                  </td>
+                  <td className="max-w-xs border-b border-gray-100 px-4 py-4 text-gray-700">
+                    <span
+                      className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${badge.cls}`}
+                    >
+                      {badge.label}
+                    </span>
+                    {prop && prop.items.length > 0 ? (
+                      <ul className="mt-2 space-y-1 text-xs text-gray-600">
+                        {prop.items.map((it, i) => (
+                          <li key={i}>
+                            ・{it.name}（{formatYenAsMan(it.subsidyMax)}）
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-2 text-xs text-gray-400">提案なし</p>
+                    )}
                   </td>
                   <td className="border-b border-gray-100 px-4 py-4 text-gray-600">
                     <p>登録: {formatDate(lead.created_at)}</p>
