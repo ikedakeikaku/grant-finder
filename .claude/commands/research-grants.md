@@ -14,6 +14,7 @@ description: 調査待ちの事業者について、補助金を定額のClaude 
    - **所在地（都道府県＋市区町村）の地元補助金**を必ず重点的に（創業/設備/販路/空き店舗/HP・DX/省エネ/事業承継 等。市の産業振興課・商工会議所/商工会の公式情報）。地元制度は競争が緩く有益。
    - 既に `existingPrograms` にある制度は**新規発掘しない**（重複禁止）。ただし既存制度を提案に含めるのは可（その場合 items の programId に既存の id を使う）。
    - 各制度: 補助率・補助上限(円)・主要要件・例年スケジュール・次回見込み(YYYY-MM)・公式URL・出典・active/watch を埋める。確認できない項目は空に。
+   - 各 item に `deadline`（直近の応募締切。判明すれば `YYYY-MM-DD`、通年や未定なら「通年」「未定」等の短い文字列）を入れる。ダッシュボードで締切と残り日数を表示するため。
 
 3. 結果を JSON ファイル `/tmp/research-results.json` に書く（形式は下記）。`subsidyMax` は円の数字文字列でよい。発掘した新規制度は `programs` に、提案カードは `items` に。`items[].programId` は `prog:<slug>`（新規なら programs と同じ slug、既存なら existingPrograms の id）。
 
@@ -43,7 +44,8 @@ description: 調査待ちの事業者について、補助金を定額のClaude 
       "items": [
         {
           "programId": "prog:tokyo-sogyo-josei", "fitReason": "...", "eligibility": "...",
-          "usability": "...", "prepare": ["..."], "scheduleNote": "...", "score": 0.9,
+          "usability": "...", "prepare": ["..."], "scheduleNote": "...",
+          "deadline": "2026-12-15", "score": 0.9,
           "confidence": 0.9, "sources": ["https://..."],
           "name": "...", "officialUrl": "https://...", "subsidyMax": 3000000, "subsidyRate": "2/3",
           "areaSearch": "東京都", "level": "prefecture", "status": "active", "nextOpen": "2026-09",

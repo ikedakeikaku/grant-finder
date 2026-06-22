@@ -13,6 +13,7 @@ export interface BusinessDefaults {
   industry: string | null;
   prefecture: string | null;
   city: string | null;
+  description: string | null;
   employee_count: number | null;
   annual_revenue: number | null;
   founded_year: number | null;
@@ -77,6 +78,25 @@ export function ProfileForm({
           </select>
         </Field>
       </div>
+
+      <Field label="所在地（市区町村）">
+        <input
+          name="city"
+          defaultValue={d?.city ?? ""}
+          placeholder="例: 横浜市中区"
+          className="input"
+        />
+      </Field>
+
+      <Field label="事業内容（自由記述）">
+        <textarea
+          name="description"
+          defaultValue={d?.description ?? ""}
+          rows={3}
+          placeholder="例: 自社SaaSの開発・提供、生成AI研修事業 など"
+          className="input"
+        />
+      </Field>
 
       <div className="grid grid-cols-3 gap-4">
         <Field label="従業員数">

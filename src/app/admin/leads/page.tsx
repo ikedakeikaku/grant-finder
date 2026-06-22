@@ -18,6 +18,7 @@ interface LeadRow {
   industry: string | null;
   prefecture: string | null;
   city: string | null;
+  description: string | null;
   employee_count: number | null;
   annual_revenue: number | null;
   founded_year: number | null;
@@ -70,7 +71,7 @@ async function fetchLeads(): Promise<LeadRow[]> {
   const { data, error } = await admin
     .from("businesses")
     .select(
-      "id, name, notify_email, notifications_enabled, industry, prefecture, city, employee_count, annual_revenue, founded_year, purposes, interests, planned_investment, proposal_status, lead_status, approved_at, created_at, updated_at",
+      "id, name, notify_email, notifications_enabled, industry, prefecture, city, description, employee_count, annual_revenue, founded_year, purposes, interests, planned_investment, proposal_status, lead_status, approved_at, created_at, updated_at",
     )
     .order("created_at", { ascending: false })
     .limit(200);
@@ -303,6 +304,11 @@ export default async function AdminLeadsPage() {
                     <p className="mt-1">
                       投資予定 {lead.planned_investment?.trim() || "-"}
                     </p>
+                    {lead.description?.trim() && (
+                      <p className="mt-1 text-xs text-gray-600">
+                        事業内容: {lead.description.trim()}
+                      </p>
+                    )}
                     <p className="mt-1 text-xs text-gray-500">
                       目的: {joinTags(lead.purposes)}
                     </p>

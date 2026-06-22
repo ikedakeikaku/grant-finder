@@ -44,6 +44,7 @@ interface ProposalItemRow {
   usability: string;
   prepare: string[];
   scheduleNote: string;
+  deadline?: string | null;
   subsidyMax: number | null;
   subsidyRate: string | null;
   officialUrl: string | null;
@@ -55,6 +56,18 @@ interface ProposalItemRow {
 function formatMan(yen: number | null): string {
   if (yen == null) return "—";
   return `${Math.round(yen / 10000).toLocaleString("ja-JP")}万円`;
+}
+
+/** 提案制度の締切表示。日付として解釈できれば残り日数も返す（自由記述はそのまま）。 */
+function proposalDeadline(
+  deadline: string | null | undefined,
+  now: Date,
+): { label: string; daysLeft: number | null } | null {
+  const raw = deadline?.trim();
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return { label: raw, daysLeft: null };
+  return { label: formatJst(d), daysLeft: differenceInCalendarDays(d, now) };
 }
 
 function itemTags(it: ProposalItemRow): string[] {
@@ -79,7 +92,9 @@ export default async function DashboardPage() {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, proposal_status, lead_status")
+    .select(
+      "id, name, proposal_status, lead_status, industry, prefecture, city, description, employee_count, annual_revenue, founded_year",
+    )
     .eq("user_id", user.id)
     .maybeSingle();
   if (!business) redirect("/profile");
@@ -204,6 +219,45 @@ export default async function DashboardPage() {
         </div>
       </header>
 
+      <section className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+        <div className="flex flex-wrap gap-x-6 gap-y-1">
+          <span>
+            所在地：
+            {[
+              business.prefecture as string | null,
+              business.city as string | null,
+            ]
+              .filter(Boolean)
+              .join(" ") || "—"}
+          </span>
+          <span>業種：{(business.industry as string | null) ?? "—"}</span>
+          <span>
+            従業員：
+            {business.employee_count != null
+              ? `${business.employee_count}人`
+              : "—"}
+          </span>
+          <span>
+            年商：
+            {business.annual_revenue != null
+              ? `${Number(business.annual_revenue).toLocaleString("ja-JP")}万円`
+              : "—"}
+          </span>
+          <span>
+            設立：
+            {business.founded_year ? `${business.founded_year}年` : "—"}
+          </span>
+        </div>
+        {(business.description as string | null)?.trim() && (
+          <p className="mt-2">事業内容：{business.description as string}</p>
+        )}
+        <p className="mt-2 text-xs">
+          <Link href="/profile" className="text-blue-700 underline">
+            登録情報を編集
+          </Link>
+        </p>
+      </section>
+
       <section className="mt-8">
         <h2 className="text-lg font-bold">🎯 あなたへの補助金提案書</h2>
         {proposalItems.length === 0 ? (
@@ -224,6 +278,7 @@ export default async function DashboardPage() {
                   `補助上限 ${formatMan(it.subsidyMax)}`,
                   ...(it.subsidyRate ? [`補助率 ${it.subsidyRate}`] : []),
                 ].join(" / ");
+                const dl = proposalDeadline(it.deadline, now);
                 return (
                   <li
                     key={it.programId}
@@ -256,6 +311,25 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                     <p className="mt-1 text-sm text-gray-600">{money}</p>
+                    {dl && (
+                      <p className="mt-2 text-sm">
+                        <span className="text-gray-500">締切：</span>
+                        {dl.label}
+                        {dl.daysLeft != null && dl.daysLeft >= 0 && (
+                          <span
+                            className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
+                              dl.daysLeft <= 7
+                                ? "bg-red-100 text-red-700"
+                                : dl.daysLeft <= 30
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            残り{dl.daysLeft}日
+                          </span>
+                        )}
+                      </p>
+                    )}
                     {it.scheduleNote && (
                       <p className="mt-2 text-sm">
                         <span className="text-gray-500">時期：</span>
