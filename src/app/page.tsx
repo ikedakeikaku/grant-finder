@@ -23,26 +23,28 @@ export default async function Home() {
       </p>
 
       <div className="mt-8 flex gap-3">
-        <Link
-          href={user ? "/dashboard" : "/login"}
-          className="rounded-md bg-black px-6 py-3 text-white"
-        >
-          {user ? "提案を見る" : "無料ではじめる"}
-        </Link>
+        {isAdmin ? (
+          // 運営は管理画面を主導線にし、顧客向けの「提案を見る」は出さない。
+          <Link
+            href="/admin/leads"
+            className="rounded-md bg-black px-6 py-3 text-white"
+          >
+            リード管理
+          </Link>
+        ) : (
+          <Link
+            href={user ? "/dashboard" : "/login"}
+            className="rounded-md bg-black px-6 py-3 text-white"
+          >
+            {user ? "提案を見る" : "無料ではじめる"}
+          </Link>
+        )}
         {!user && (
           <Link
             href="/login"
             className="rounded-md border border-gray-300 px-6 py-3"
           >
             ログイン
-          </Link>
-        )}
-        {isAdmin && (
-          <Link
-            href="/admin/leads"
-            className="rounded-md border border-gray-300 px-6 py-3"
-          >
-            リード管理
           </Link>
         )}
       </div>
