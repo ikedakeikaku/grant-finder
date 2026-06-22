@@ -14,16 +14,16 @@ import {
   type RelevanceCandidate,
 } from "./relevance";
 
-/** 1事業者あたりに提案する上限件数 */
-export const MATCH_LIMIT = 10;
+/** 1事業者あたりに提案する上限件数（絞り込み: 少数精鋭にする） */
+export const MATCH_LIMIT = 5;
 /** LLMに渡す予測候補の上限（max_tokens対策＋ノイズ削減） */
 const PREDICTION_CANDIDATE_POOL = 80;
 /** LLM 関連性ランクにかける候補プールの上限 */
 const CANDIDATE_POOL = 60;
 /** 提案として採用する最低スコア（決定論・LLM共通の足切り） */
 const MIN_SCORE = 0.3;
-/** LLM 関連性で採用する閾値 */
-const RELEVANCE_THRESHOLD = 0.5;
+/** LLM 関連性で採用する閾値（高めにして「汎用性あり」程度の弱い候補を弾く） */
+const RELEVANCE_THRESHOLD = 0.65;
 
 export interface BusinessMatchInput {
   id: string;
