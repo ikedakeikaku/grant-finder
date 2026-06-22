@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { differenceInCalendarDays } from "date-fns";
 import { isAdminEmail } from "@/lib/admin/access";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -36,6 +37,20 @@ interface ProposalItem {
   name: string;
   subsidyMax: number | null;
   status?: string | null;
+  deadline?: string | null;
+}
+
+/** 提案の締切表示。日付なら残り日数も付ける（自由記述はそのまま）。 */
+function deadlineLabel(
+  deadline: string | null | undefined,
+  now: Date,
+): string {
+  const raw = deadline?.trim();
+  if (!raw) return "";
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return raw;
+  const left = differenceInCalendarDays(d, now);
+  return left >= 0 ? `${raw}（残り${left}日）` : `${raw}（終了）`;
 }
 
 interface ProposalInfo {
@@ -217,6 +232,7 @@ function LeadActions({ lead }: { lead: LeadRow }) {
 
 export default async function AdminLeadsPage() {
   const adminEmail = await requireAdminEmail();
+  const now = new Date();
   const [leads, proposals] = await Promise.all([
     fetchLeads(),
     fetchProposals(),
@@ -324,11 +340,20 @@ export default async function AdminLeadsPage() {
                     </span>
                     {prop && prop.items.length > 0 ? (
                       <ul className="mt-2 space-y-1 text-xs text-gray-600">
-                        {prop.items.map((it, i) => (
-                          <li key={i}>
-                            ・{it.name}（{formatYenAsMan(it.subsidyMax)}）
-                          </li>
-                        ))}
+                        {prop.items.map((it, i) => {
+                          const dl = deadlineLabel(it.deadline, now);
+                          return (
+                            <li key={i}>
+                              ・{it.name}（{formatYenAsMan(it.subsidyMax)}）
+                              {dl && (
+                                <span className="text-gray-400">
+                                  {" "}
+                                  締切 {dl}
+                                </span>
+                              )}
+                            </li>
+                          );
+                        })}
                       </ul>
                     ) : (
                       <p className="mt-2 text-xs text-gray-400">提案なし</p>
