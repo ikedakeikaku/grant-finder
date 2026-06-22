@@ -4,7 +4,12 @@ import { differenceInCalendarDays } from "date-fns";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatJst } from "@/lib/notifications/render";
 import { safeHttpUrl } from "@/lib/url";
+import { overlapsAnyName } from "@/lib/core/dedupe";
 import { signOut } from "../auth/actions";
+
+/** ダッシュボードで表示する受付中・予測の各上限（少数精鋭にする）。 */
+const DISPLAY_MATCH_LIMIT = 5;
+const DISPLAY_PREDICTED_LIMIT = 5;
 
 interface MatchRow {
   id: string;
@@ -149,13 +154,42 @@ export default async function DashboardPage() {
 
   const now = new Date();
 
+  // 重複・低品質を抑えて少数精鋭に絞る。
+  //  - 提案書（🎯）に既出の制度は📨📅から除外
+  //  - 補助上限0円（利子補給など実質ローン）は除外
+  //  - 締切超過は除外、各セクション上限で打ち切り
+  const proposalNames = proposalItems.map((it) => it.name);
+  const visibleMatches = matches
+    .filter((m) => {
+      const s = m.subsidies;
+      if (!s) return false;
+      if (s.subsidy_max_limit === 0) return false;
+      if (s.acceptance_end_datetime) {
+        const end = new Date(s.acceptance_end_datetime);
+        if (differenceInCalendarDays(end, now) < 0) return false;
+      }
+      return !overlapsAnyName(s.title, proposalNames);
+    })
+    .slice(0, DISPLAY_MATCH_LIMIT);
+  const visibleMatchTitles = visibleMatches
+    .map((m) => m.subsidies?.title)
+    .filter((t): t is string => Boolean(t));
+  const visiblePredicted = predicted
+    .filter((p) => {
+      const pred = p.subsidy_predictions;
+      if (!pred) return false;
+      if (overlapsAnyName(pred.name, proposalNames)) return false;
+      return !overlapsAnyName(pred.name, visibleMatchTitles);
+    })
+    .slice(0, DISPLAY_PREDICTED_LIMIT);
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{business.name} さんへの提案</h1>
           <p className="mt-1 text-sm text-gray-600">
-            登録条件に合う補助金 {matches.length} 件
+            登録条件に合う補助金 {visibleMatches.length} 件
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
@@ -258,7 +292,7 @@ export default async function DashboardPage() {
       </section>
 
       <h2 className="mt-12 text-lg font-bold">📨 現在受付中（Jグランツ）</h2>
-      {matches.length === 0 ? (
+      {visibleMatches.length === 0 ? (
         <div className="mt-10 rounded-lg border border-gray-200 bg-gray-50 p-6 text-sm text-gray-600">
           現在受付中で条件に合う補助金は見つかりませんでした。
           公募が始まったらメールでお知らせします。条件の見直しは
@@ -269,7 +303,7 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <ul className="mt-8 space-y-4">
-          {matches.map((m) => {
+          {visibleMatches.map((m) => {
             const s = m.subsidies;
             if (!s) return null;
             const end = s.acceptance_end_datetime
@@ -352,7 +386,7 @@ export default async function DashboardPage() {
         </ul>
       )}
 
-      {predicted.length > 0 && (
+      {visiblePredicted.length > 0 && (
         <section className="mt-12">
           <h2 className="text-lg font-bold">
             📅 例年そろそろ公募が予想される補助金
@@ -361,7 +395,7 @@ export default async function DashboardPage() {
             過去の公募実績から、まもなく募集が始まると予測される制度です。公募開始が近づいたらお知らせします。
           </p>
           <ul className="mt-4 space-y-3">
-            {predicted.map((p) => {
+            {visiblePredicted.map((p) => {
               const pred = p.subsidy_predictions;
               if (!pred) return null;
               return (
