@@ -57,3 +57,32 @@ export function planNotifications(
 
   return planned;
 }
+
+/**
+ * 送信頻度の最短間隔（日）。緊急以外はこの間隔まで束ねて「毎日メール」を防ぐ。
+ */
+export const MIN_SEND_INTERVAL_DAYS = 3;
+
+/** 間隔を待たず即送る緊急通知（締切直前・公募開始）。 */
+export const URGENT_NOTIFICATION_TYPES: ReadonlySet<string> = new Set([
+  "deadline_7d",
+  "opened",
+]);
+
+/**
+ * いま送ってよいか（最短送信間隔の判定・純粋関数）。
+ * - 緊急通知を含む場合は常に送る。
+ * - 直近送信が無ければ送る。
+ * - 直近送信から minIntervalDays 日以上経っていれば送る。それ未満なら束ねるため見送り。
+ */
+export function shouldSendNow(
+  lastSentAt: Date | null,
+  now: Date,
+  hasUrgent: boolean,
+  minIntervalDays: number = MIN_SEND_INTERVAL_DAYS,
+): boolean {
+  if (hasUrgent) return true;
+  if (!lastSentAt) return true;
+  const days = (now.getTime() - lastSentAt.getTime()) / 86_400_000;
+  return days >= minIntervalDays;
+}

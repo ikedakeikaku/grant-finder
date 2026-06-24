@@ -3,6 +3,8 @@ import { createSupabaseAdminClient } from "../src/lib/supabase/admin";
 import {
   planNotifications,
   preAnnounceDue,
+  shouldSendNow,
+  URGENT_NOTIFICATION_TYPES,
   type NotificationType,
 } from "../src/lib/core/notify-plan";
 import {
@@ -303,7 +305,13 @@ async function sendDue(
   supabase: SupabaseAdmin,
   sender: EmailSender,
   now: Date,
-): Promise<{ sent: number; failed: number; skipped: number; emails: number }> {
+): Promise<{
+  sent: number;
+  failed: number;
+  skipped: number;
+  emails: number;
+  deferred: number;
+}> {
   if (process.env.RESEND_API_KEY && !safeHttpUrl(process.env.APP_BASE_URL)) {
     throw new Error(
       "実メール送信時は APP_BASE_URL に https://... を設定してください",
@@ -320,12 +328,23 @@ async function sendDue(
     byBiz.set(n.business_id, list);
   }
 
+  // 事業者ごとの直近送信時刻（最短送信間隔の判定用）。
+  const lastSentByBiz = await fetchLastSentByBusiness(supabase);
+
   let sent = 0;
   let failed = 0;
   let skipped = 0;
   let emails = 0;
+  let deferred = 0;
 
-  for (const rows of byBiz.values()) {
+  for (const [businessId, rows] of byBiz.entries()) {
+    // 最短送信間隔: 緊急(締切7日前/公募開始)以外は中n日へ束ねる。見送り分は次回再評価。
+    const hasUrgent = rows.some((n) => URGENT_NOTIFICATION_TYPES.has(n.type));
+    if (!shouldSendNow(lastSentByBiz.get(businessId) ?? null, now, hasUrgent)) {
+      deferred += rows.length;
+      continue;
+    }
+
     // 並行実行に備え各通知を claim。取れたものだけ処理する。
     const claimed: DueRow[] = [];
     for (const n of rows) {
@@ -426,7 +445,29 @@ async function sendDue(
     else failed += claimed.length;
   }
 
-  return { sent, failed, skipped, emails };
+  return { sent, failed, skipped, emails, deferred };
+}
+
+/** 事業者ごとの直近メール送信時刻（status=sent の最新）を返す。 */
+async function fetchLastSentByBusiness(
+  supabase: SupabaseAdmin,
+): Promise<Map<string, Date>> {
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("business_id, sent_at")
+    .eq("status", "sent")
+    .not("sent_at", "is", null)
+    .order("sent_at", { ascending: false });
+  if (error) throw new Error(`直近送信取得失敗: ${error.message}`);
+  const map = new Map<string, Date>();
+  for (const n of (data ?? []) as Array<{
+    business_id: string;
+    sent_at: string | null;
+  }>) {
+    if (!n.sent_at || map.has(n.business_id)) continue; // 降順なので最初が最新
+    map.set(n.business_id, new Date(n.sent_at));
+  }
+  return map;
 }
 
 async function fetchDueNotifications(
@@ -508,7 +549,7 @@ async function main(): Promise<void> {
 
   const r = await sendDue(supabase, sender, now);
   console.log(
-    `[notify] 送信 メール=${r.emails}通 (通知 sent=${r.sent} failed=${r.failed} skipped=${r.skipped})`,
+    `[notify] 送信 メール=${r.emails}通 (通知 sent=${r.sent} failed=${r.failed} skipped=${r.skipped} 見送り=${r.deferred})`,
   );
 }
 
