@@ -46,6 +46,50 @@ export function dedupeByScheduleKey<T extends DedupeItem>(items: T[]): T[] {
 }
 
 /**
+ * schedule_key の末尾の「○○枠(...)」を落として同一補助金の親キーを返す。
+ * 例: 「…_事業承継・M&A補助金_PMI推進枠(事業統合投資類型)」→「…_事業承継・M&A補助金」。
+ * 枠を含まないキーはそのまま返す（過剰な名寄せを避ける）。
+ */
+export function baseScheduleKey(key: string | null): string | null {
+  if (!key) return key;
+  const parts = key.split("_");
+  const last = parts[parts.length - 1];
+  if (parts.length > 1 && last && last.includes("枠")) {
+    return parts.slice(0, -1).join("_");
+  }
+  return key;
+}
+
+/**
+ * 同一補助金の「枠」違いを1件に集約する純粋関数（締切が最も近い枠を代表に残す）。
+ * 提案/通知で「PMI推進枠が2つ」のような重複を防ぐ。親キーが取れないものは全件残す。
+ */
+export function dedupeByProgramFamily<T extends DedupeItem>(items: T[]): T[] {
+  const groups = new Map<string, T[]>();
+  const singles: T[] = [];
+
+  for (const item of items) {
+    const base = baseScheduleKey(item.scheduleKey);
+    if (!base) {
+      singles.push(item);
+      continue;
+    }
+    const group = groups.get(base) ?? [];
+    group.push(item);
+    groups.set(base, group);
+  }
+
+  const representatives: T[] = [];
+  for (const group of groups.values()) {
+    representatives.push(
+      group.reduce((best, cur) => (endTime(cur) < endTime(best) ? cur : best)),
+    );
+  }
+
+  return [...representatives, ...singles];
+}
+
+/**
  * 制度名を比較用に正規化する。年度・回次・括弧書き・記号・空白を落とし、
  * 「【令和8年度】省CO2型システムへの改修支援事業」と「省CO2型システムへの改修支援事業」を
  * 同一視できるようにする純粋関数。

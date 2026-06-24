@@ -5,7 +5,7 @@ import {
   type SubsidyForMatch,
 } from "../core/matching";
 import { isApplicationOffering } from "../core/offering";
-import { dedupeByScheduleKey } from "../core/dedupe";
+import { dedupeByScheduleKey, dedupeByProgramFamily } from "../core/dedupe";
 import { PREFECTURES } from "../core/constants";
 import { isCuratedJgrantsTitle } from "../curated";
 import {
@@ -76,7 +76,8 @@ export async function fetchOpenSubsidiesForMatch(
       catchPhrase: s.catch_phrase,
     }));
 
-  return dedupeByScheduleKey(offerings).map((s) => ({
+  // 回次の名寄せ→さらに同一補助金の枠違い(PMI推進枠等)を1件に集約。
+  return dedupeByProgramFamily(dedupeByScheduleKey(offerings)).map((s) => ({
     id: s.id,
     usePurpose: s.usePurpose,
     industry: s.industry,
