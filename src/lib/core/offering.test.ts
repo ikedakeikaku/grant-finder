@@ -12,6 +12,11 @@ describe("isApplicationOffering", () => {
       isApplicationOffering("[第六回以降] 事業再構築補助金（共同申請者）"),
     ).toBe(false);
   });
+  it("共同申請(リース会社)も除外", () => {
+    expect(
+      isApplicationOffering("事業再構築補助金（共同申請_リース会社）"),
+    ).toBe(false);
+  });
   it("実績報告・変更申請は除外", () => {
     expect(isApplicationOffering("○○補助金 実績報告")).toBe(false);
     expect(isApplicationOffering("○○補助金 変更申請")).toBe(false);

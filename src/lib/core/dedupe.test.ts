@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  baseScheduleKey,
+  dedupeByProgramFamily,
   dedupeByScheduleKey,
   isSameProgram,
   normalizeProgramName,
@@ -106,5 +108,42 @@ describe("overlapsAnyName", () => {
     expect(overlapsAnyName("省CO2型システムへの改修支援事業", proposals)).toBe(
       false,
     );
+  });
+});
+
+describe("baseScheduleKey", () => {
+  it("末尾の枠を落として親キーにする", () => {
+    expect(
+      baseScheduleKey(
+        "中小企業生産性革命推進事業_事業承継・M&A補助金_PMI推進枠(事業統合投資類型)",
+      ),
+    ).toBe("中小企業生産性革命推進事業_事業承継・M&A補助金");
+  });
+  it("枠を含まないキーはそのまま", () => {
+    expect(baseScheduleKey("東京都_創業助成事業")).toBe("東京都_創業助成事業");
+  });
+  it("null はそのまま", () => {
+    expect(baseScheduleKey(null)).toBe(null);
+  });
+});
+
+describe("dedupeByProgramFamily", () => {
+  it("同一補助金の枠違いを締切が最も近い1件に集約", () => {
+    const k = "中小企業生産性革命推進事業_事業承継・M&A補助金";
+    const items = [
+      { id: "pmi1", scheduleKey: `${k}_PMI推進枠(事業統合投資類型)`, acceptanceEnd: "2026-07-24T00:00:00Z" },
+      { id: "pmi2", scheduleKey: `${k}_PMI推進枠(PMI専門家活用類型)`, acceptanceEnd: "2026-07-24T00:00:00Z" },
+      { id: "sokushin", scheduleKey: `${k}_事業承継促進枠`, acceptanceEnd: "2026-06-30T00:00:00Z" },
+    ];
+    const out = dedupeByProgramFamily(items);
+    expect(out).toHaveLength(1);
+    expect(out[0]!.id).toBe("sokushin"); // 締切が最も近い枠
+  });
+  it("別補助金は別々に残る", () => {
+    const items = [
+      { id: "a", scheduleKey: "国_持続化補助金_一般枠", acceptanceEnd: "2026-09-01T00:00:00Z" },
+      { id: "b", scheduleKey: "国_ものづくり補助金_通常枠", acceptanceEnd: "2026-09-01T00:00:00Z" },
+    ];
+    expect(dedupeByProgramFamily(items)).toHaveLength(2);
   });
 });
